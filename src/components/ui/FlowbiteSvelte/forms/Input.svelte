@@ -24,8 +24,15 @@
 		base: ''
 	};
 	// tinted if put in component having its own background
-	let background = getContext('background');
-	let group = getContext('group');
+	let background;
+	let group;
+	try {
+		background = getContext('background');
+		group = getContext('group');
+	} catch (e) {
+		background = null;
+		group = null;
+	}
 	const textSizes = { sm: 'sm:text-xs', md: 'text-sm', lg: 'sm:text-base' };
 	const leftPadding = { sm: 'ps-9', md: 'ps-10', lg: 'ps-11' };
 	const rightPadding = { sm: 'pe-9', md: 'pe-10', lg: 'pe-11' };

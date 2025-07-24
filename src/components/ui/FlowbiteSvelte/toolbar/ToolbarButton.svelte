@@ -1,7 +1,12 @@
 <script>
 	import { getContext } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
-	const background = getContext('background');
+	let background;
+	try {
+		background = getContext('background');
+	} catch (e) {
+		background = null;
+	}
 	export let color = 'default';
 	export let name = undefined;
 	export let ariaLabel = undefined;

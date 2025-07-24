@@ -1,8 +1,8 @@
-export const websiteURL = 'QuranWBW.com';
+export const websiteURL = 'quran.zikirnurani.com';
 
-export const websiteTagline = 'Word By Word Translation, Transliteration And Morphology';
+export const websiteTagline = 'An all-in-one platform for Quranic learning and built with love for the people of Sabah';
 
-export const websiteTitle = `Quran ${websiteTagline} - ${websiteURL}`;
+export const websiteTitle = `Digital Dakwah - ${websiteTagline}`;
 
 export const wbwLanguages = 'English, Urdu, Hindi, Indonesian, Bangla, Turkish, Tamil, French, German, Chinese, Malayalam, Divehi, Sindhi, Persian and Albanian';
 
@@ -14,7 +14,14 @@ export const apiEndpoint = useLocalAPI ? 'http://localhost:7500/v2' : 'https://a
 
 export const staticEndpoint = 'https://static.quranwbw.com/data/v4';
 
-export const wordsAudioURL = 'https://audios.quranwbw.com/words';
+// Updated to use Cloudflare R2 with custom domain
+export const wordsAudioURL = 'https://audio.zikirnurani.com/words';
+
+// Alternative: Direct R2 URL (if custom domain not set up yet)
+// export const wordsAudioURL = 'https://pub-your-r2-bucket-id.r2.dev/words';
+
+// Backup audio URL
+export const backupAudioURL = 'https://audios.quranwbw.com/words';
 
 export const mushafFontVersion = 8;
 

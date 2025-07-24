@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for the mosque dome -->
+    <linearGradient id="domeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ADE80;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#22C55E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16A34A;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradient for text -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E5E7EB;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F9FAFB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E5E7EB;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="500" fill="url(#bgGradient)"/>
+  
+  <!-- Main Logo Container -->
+  <g transform="translate(200, 180)">
+    
+    <!-- Mosque Dome/Arch -->
+    <g filter="url(#dropShadow)">
+      <!-- Main dome -->
+      <path d="M -80 20 Q -80 -60 0 -80 Q 80 -60 80 20 L 60 20 Q 60 -40 0 -60 Q -60 -40 -60 20 Z" 
+            fill="url(#domeGradient)" stroke="url(#domeGradient)" stroke-width="2"/>
+      
+      <!-- Minaret/Top point -->
+      <path d="M 0 -80 L -8 -100 Q 0 -105 8 -100 Z" fill="url(#domeGradient)"/>
+      
+      <!-- Side decorative elements -->
+      <path d="M -80 20 Q -90 15 -95 20 L -85 25 Q -80 22 -80 20" fill="url(#domeGradient)"/>
+      <path d="M 80 20 Q 90 15 95 20 L 85 25 Q 80 22 80 20" fill="url(#domeGradient)"/>
+    </g>
+    
+    <!-- Digital Heartbeat/Pulse Wave -->
+    <g transform="translate(0, -10)">
+      <path d="M -90 0 L -70 0 L -60 -25 L -45 40 L -30 -35 L -15 30 L 0 -20 L 15 30 L 30 -35 L 45 40 L 60 -25 L 70 0 L 90 0" 
+            stroke="url(#domeGradient)" stroke-width="4" fill="none" 
+            stroke-linecap="round" stroke-linejoin="round" 
+            opacity="0.9" filter="url(#dropShadow)"/>
+    </g>
+    
+    <!-- Open Book at bottom -->
+    <g transform="translate(0, 40)">
+      <!-- Book base -->
+      <path d="M -50 0 Q -50 -5 -45 -8 L 45 -8 Q 50 -5 50 0 L 50 25 Q 50 30 45 33 L -45 33 Q -50 30 -50 25 Z" 
+            fill="url(#domeGradient)" filter="url(#dropShadow)"/>
+      
+      <!-- Book pages -->
+      <path d="M 0 -8 L 0 33" stroke="#F9FAFB" stroke-width="2"/>
+      <path d="M -40 0 L 40 0" stroke="#F9FAFB" stroke-width="1" opacity="0.7"/>
+      <path d="M -40 8 L 40 8" stroke="#F9FAFB" stroke-width="1" opacity="0.7"/>
+      <path d="M -40 16 L 40 16" stroke="#F9FAFB" stroke-width="1" opacity="0.7"/>
+      <path d="M -40 24 L 40 24" stroke="#F9FAFB" stroke-width="1" opacity="0.7"/>
+      
+      <!-- Left page -->
+      <path d="M -45 -8 Q 0 -12 0 -8 L 0 33 Q 0 29 -45 33 Q -50 30 -50 25 L -50 0 Q -50 -5 -45 -8" 
+            fill="url(#domeGradient)" opacity="0.9"/>
+      
+      <!-- Right page -->
+      <path d="M 45 -8 Q 0 -12 0 -8 L 0 33 Q 0 29 45 33 Q 50 30 50 25 L 50 0 Q 50 -5 45 -8" 
+            fill="url(#domeGradient)" opacity="0.9"/>
+    </g>
+  </g>
+  
+  <!-- DIGITAL DAKWAH Text -->
+  <text x="200" y="380" text-anchor="middle" 
+        font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+        fill="url(#textGradient)" filter="url(#dropShadow)">
+    DIGITAL
+  </text>
+  
+  <text x="200" y="440" text-anchor="middle" 
+        font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+        fill="url(#textGradient)" filter="url(#dropShadow)">
+    DAKWAH
+  </text>
+  
+  <!-- Background gradient definition -->
+  <defs>
+    <radialGradient id="bgGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#1F2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+</svg>

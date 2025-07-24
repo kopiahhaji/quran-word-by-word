@@ -48,10 +48,20 @@
 	// Update chapter names for the mushaf page
 	$: {
 		try {
-			mushafJuz = `${term('juz')} ${$__mushafPageDivisions.juz}`;
-			mushafChapters = Object.values($__mushafPageDivisions.chapters).map((value) => quranMetaData[value].transliteration);
+			if ($__mushafPageDivisions && $__mushafPageDivisions.juz) {
+				mushafJuz = `${term('juz')} ${$__mushafPageDivisions.juz}`;
+			} else {
+				mushafJuz = '';
+			}
+			if ($__mushafPageDivisions && $__mushafPageDivisions.chapters) {
+				mushafChapters = Object.values($__mushafPageDivisions.chapters).map((value) => quranMetaData[value].transliteration);
+			} else {
+				mushafChapters = [];
+			}
 		} catch (error) {
 			console.warn(error);
+			mushafJuz = '';
+			mushafChapters = [];
 		}
 	}
 </script>
@@ -106,7 +116,7 @@
 
 	<!-- mini nav for chapter page -->
 	{#if $__currentPage === 'chapter'}
-		<div id="bottom-nav" class="flex flex-row items-center justify-between text-xs max-w-screen-lg mx-auto px-6">
+		<div id="bottom-nav" class="flex flex-row items-center justify-between text-xs w-full px-6">
 			<div id="navbar-bottom-chapter-revalation" class="flex flex-row items-center py-2">
 				{#if !$__topNavbarVisible}
 					<span>{@html navbarChapterName}</span>
@@ -121,12 +131,12 @@
 			</div>
 		</div>
 
-		<div id="chapter-progress-bar" class="fixed inset-x-0 z-20 h-1 rounded-r-3xl {window.theme('bgSecondary')}" style="width: {chapterProgress}%" />
+		<div id="chapter-progress-bar" class="fixed inset-x-0 z-20 h-1 rounded-r-3xl {window.theme('bgSecondary')}" style="width: {chapterProgress}%"></div>
 	{/if}
 
 	<!-- mini nav for mushaf page -->
 	{#if $__currentPage === 'mushaf'}
-		<div id="bottom-nav" class="flex flex-row items-center justify-between border-t {window.theme('border')} text-xs max-w-screen-lg mx-auto px-6">
+		<div id="bottom-nav" class="flex flex-row items-center justify-between border-t {window.theme('border')} text-xs w-full px-6">
 			<div class="flex flex-row items-center py-2">
 				{#if !$__topNavbarVisible}
 					<span>Page {$__pageNumber} -&nbsp;</span>

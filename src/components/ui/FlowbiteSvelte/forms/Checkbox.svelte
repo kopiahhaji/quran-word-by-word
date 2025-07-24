@@ -11,7 +11,12 @@
 	export let checked = undefined;
 	export let spacing = $$slots.default ? 'me-2' : '';
 	// tinted if put in component having its own background
-	let background = getContext('background');
+	let background;
+	try {
+		background = getContext('background');
+	} catch (e) {
+		background = null;
+	}
 	// react on external group changes
 	function init(_, _group) {
 		if (checked === undefined) checked = _group.includes(value);

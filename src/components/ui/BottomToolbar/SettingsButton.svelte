@@ -4,8 +4,10 @@
 	import { __settingsDrawerHidden } from '$utils/stores';
 </script>
 
-<button type="button" title="Settings" on:click={() => ($__settingsDrawerHidden = false)} class="inline-flex flex-col items-center justify-center px-5 group {window.theme('hover')}" data-umami-event="Toolbar Settings Button">
-	<SettingsFilled size={5} />
-	<span class="sr-only">Settings</span>
-</button>
+<div class="flex items-center justify-center">
+	<button type="button" title="Settings" on:click={() => ($__settingsDrawerHidden = false)} class="inline-flex flex-col items-center justify-center w-12 h-12 rounded-full group {window.theme('hover')}" data-umami-event="Toolbar Settings Button">
+		<SettingsFilled size={5} />
+		<span class="sr-only">Settings</span>
+	</button>
+</div>
 <Tooltip arrow={false} type="light" class="hidden md:block font-normal">Settings</Tooltip>

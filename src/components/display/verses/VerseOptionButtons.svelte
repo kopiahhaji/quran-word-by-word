@@ -77,17 +77,20 @@
 		</div>
 
 		<!-- other verse buttons -->
-		<div class="flex flex-row space-x-2">
-			<!-- play verse button -->
+	<div class="flex flex-row items-center space-x-2">
+		<!-- play verse button -->
+		<div class="relative">
 			<button on:click={() => audioHandler(key)} class={buttonClasses} aria-label="Play">
-				<div>
+				<div class="flex items-center justify-center">
 					<svelte:component this={$__audioSettings.isPlaying && $__audioSettings.playingKey === key ? Pause : PlaySolid} size={3.5} />
 				</div>
 			</button>
 			<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Play</Tooltip>
-
-			<!-- notes button -->
-			{#if Object.prototype.hasOwnProperty.call($__userNotes, key)}
+		</div>
+		
+		<!-- notes button -->
+		{#if Object.prototype.hasOwnProperty.call($__userNotes, key)}
+			<div class="relative">
 				<button
 					on:click={() => {
 						__verseKey.set(key);
@@ -96,30 +99,35 @@
 					class={buttonClasses}
 					aria-label="Note"
 				>
-					<div><NotesFilled size={3.5} /></div>
+					<div class="flex items-center justify-center"><NotesFilled size={3.5} /></div>
 				</button>
 				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Notes</Tooltip>
-			{/if}
+			</div>
+		{/if}
 
-			<!-- bookmark/unbookmark button -->
-			{#if userBookmarks.includes(key)}
+		<!-- bookmark/unbookmark button -->
+		{#if userBookmarks.includes(key)}
+			<div class="relative">
 				<button on:click={() => updateSettings({ type: 'userBookmarks', key, set: true })} class={buttonClasses} aria-label="Bookmark">
-					<div>
+					<div class="flex items-center justify-center">
 						<svelte:component this={userBookmarks.includes(key) ? BookmarkFilled : Bookmark} size={3.5} />
 					</div>
 				</button>
 				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Bookmark</Tooltip>
-			{/if}
+			</div>
+		{/if}
 
-			<!-- verses option dropdown -->
-			<button id="verse-options-{verse}" class={buttonClasses} aria-label="Options" on:mouseenter={__verseKey.set(key)} on:click={__verseKey.set(key)}>
-				<div>
+		<!-- verses option dropdown -->
+		<div class="relative">
+			<button id="verse-options-{verse}" class={buttonClasses} aria-label="Options" on:mouseenter={() => __verseKey.set(key)} on:click={() => __verseKey.set(key)}>
+				<div class="flex items-center justify-center">
 					<DotsHorizontal size={6} />
 				</div>
 			</button>
 			<VerseOptionsDropdown page={value.meta.page} />
 			<Tooltip triggeredBy="#verse-options-{verse}" arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Options</Tooltip>
 		</div>
+	</div>
 	</div>
 
 	<!-- words block toggle button for display #7 -->

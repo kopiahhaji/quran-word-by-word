@@ -1,9 +1,18 @@
 <script>
-	import { createEventDispatcher, setContext } from 'svelte';
+	import { createEventDispatcher, setContext, onMount } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
 	import {} from 'svelte/transition';
 	const noop = () => {};
-	setContext('background', true);
+	
+	// Set context safely on mount
+	onMount(() => {
+		try {
+			setContext('background', true);
+		} catch (error) {
+			console.warn('Frame background context error:', error);
+		}
+	});
+	
 	export let tag = $$restProps.href ? 'a' : 'div';
 	export let color = 'default';
 	export let rounded = false;
@@ -23,7 +32,16 @@
 	$: dispatch(open ? 'open' : 'close');
 	$: dispatch('show', open);
 	$: color = color ?? 'default'; // for cases when undefined
-	$: setContext('color', color);
+	
+	// Set color context safely
+	onMount(() => {
+		try {
+			setContext('color', color);
+		} catch (error) {
+			console.warn('Frame color context error:', error);
+		}
+	});
+	
 	// your script goes here
 	const bgColors = {
 		default: `${window.theme('bgMain')}`,

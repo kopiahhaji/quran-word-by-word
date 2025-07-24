@@ -1,10 +1,18 @@
 <script>import Frame from '../utils/Frame.svelte';
-import { setContext } from 'svelte';
+import { setContext, onMount } from 'svelte';
 import { writable } from 'svelte/store';
 import { twJoin, twMerge } from 'tailwind-merge';
 export let embedded = false;
 const separators = writable(false);
-setContext('toolbar', separators);
+
+// Set context safely on mount
+onMount(() => {
+	try {
+		setContext('toolbar', separators);
+	} catch (error) {
+		console.warn('Toolbar context error:', error);
+	}
+});
 let color;
 $: color = embedded ? 'none' : $$props.color;
 let separatorsClass;

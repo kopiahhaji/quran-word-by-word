@@ -33,7 +33,7 @@
 	const commontabClasses = 'px-2 md:px-3 py-2 text-xs md:text-md border-b-4 cursor-pointer';
 	const tabDefaultBorder = `${commontabClasses} border-transparent`;
 	const tabActiveBorder = `${commontabClasses} ${window.theme('border')}`;
-	const siteDescriptionText = ['Your companion for reading, listening to, and learning the Holy Quran, word by word.', 'With features like word audios, Tajweed colors, and transliteration, delve into the Quran with ease. Additionally, explore multi-language translations, tafsir, and detailed word morphology.'];
+	const siteDescriptionText = ['Digital Dakwah - An all-in-one platform for Quranic learning and built with love for the people of Sabah.', 'Explore the Holy Quran with features like word audios, Tajweed colors, and transliteration. Additionally, delve into multi-language translations, tafsir, and detailed word morphology.'];
 	const currentHour = new Date().getHours();
 
 	let divisionsActiveTab = 1; // Default to chapters tab
@@ -91,7 +91,7 @@
 	__currentPage.set('home');
 </script>
 
-<PageHead title={`Quran ${websiteTagline}`} />
+<PageHead title={`Digital Dakwah ${websiteTagline}`} />
 
 <div class="max-w-5xl mx-auto flex flex-col space-y-4 md:px-4">
 	<!-- top menu -->
@@ -114,8 +114,8 @@
 
 			<div class="flex flex-col">
 				<div id="site-title" class="text-2xl md:text-3xl font-bold pb-2" style="color: {window.theme('icon')}">
-					<span class="block md:hidden">QuranWBW</span>
-					<span class="hidden md:block">Quran Word By Word</span>
+					<span class="block md:hidden">Digital Dakwah</span>
+					<span class="hidden md:block">Digital Dakwah</span>
 				</div>
 
 				<div id="site-description" class="text-sm opacity-70">

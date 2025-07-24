@@ -6,8 +6,15 @@
 	export let href = undefined;
 	export let activeClass = undefined;
 	// export let active: boolean = false;
-	const context = getContext('DropdownType') ?? {};
-	const activeUrlStore = getContext('activeUrl');
+	let context = {};
+	let activeUrlStore;
+	try {
+		context = getContext('DropdownType') ?? {};
+		activeUrlStore = getContext('activeUrl');
+	} catch (e) {
+		context = {};
+		activeUrlStore = { subscribe: () => {} };
+	}
 	let sidebarUrl = '';
 	activeUrlStore.subscribe((value) => {
 		// console.log('value: ', value)

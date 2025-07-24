@@ -18,7 +18,12 @@
 	export let value = '';
 	export let spacing = $$slots.default ? 'me-2' : '';
 	// tinted if put in component having its own background
-	let background = getContext('background');
+	let background;
+	try {
+		background = getContext('background');
+	} catch (e) {
+		background = null;
+	}
 </script>
 
 <Label class={labelClass(inline, $$props.class)} show={$$slots.default}>

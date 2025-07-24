@@ -5,7 +5,7 @@
 <script>
 	import { twMerge } from 'tailwind-merge';
 	import Popper from '../utils/Popper.svelte';
-	import { setContext } from 'svelte';
+	import { setContext, onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	const activeUrlStore = writable('');
 	export let activeUrl = '';
@@ -18,10 +18,19 @@
 	export let classFooter = undefined;
 	export let activeClass = 'text-primary-700 hover:text-primary-900';
 	export let classActive = undefined;
+	
+	// Set context safely with error handling on mount
 	let activeCls = twMerge(activeClass, classActive);
-	setContext('DropdownType', { activeClass: activeCls });
+	onMount(() => {
+		try {
+			setContext('DropdownType', { activeClass: activeCls });
+			setContext('activeUrl', activeUrlStore);
+		} catch (error) {
+			console.warn('Dropdown context error:', error);
+		}
+	});
+	
 	$: activeUrlStore.set(activeUrl);
-	setContext('activeUrl', activeUrlStore);
 	$: containerCls = twMerge(containerClass, classContainer);
 	$: headerCls = twMerge(headerClass, classHeader);
 	$: ulCls = twMerge('py-1', $$props.class);

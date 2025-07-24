@@ -122,7 +122,10 @@
 		// Scroll to last known position
 		setTimeout(() => {
 			try {
-				document.getElementById('settings-drawer').scrollTop = mainSettingsScrollPos;
+				const settingsDrawer = document.getElementById('settings-drawer');
+				if (settingsDrawer) {
+					settingsDrawer.scrollTop = mainSettingsScrollPos;
+				}
 			} catch (error) {
 				console.warn(error);
 			}
