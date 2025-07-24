@@ -136,39 +136,17 @@ export async function fetchAndCacheJson(url, type = 'other') {
 		return cachedData;
 	}
 
-	// Fetch from API with better error handling
-	try {
-		console.log(`Fetching: ${url}`);
-		const response = await fetch(url, {
-			method: 'GET',
-			headers: {
-				'Accept': 'application/json',
-				'User-Agent': 'Digital-Dakwah/4.0.0',
-				'Referer': typeof window !== 'undefined' ? window.location.origin : 'https://quran.zikirnurani.com'
-			},
-			mode: 'cors'
-		});
-		
-		if (!response.ok) {
-			console.error(`HTTP Error: ${response.status} ${response.statusText} for ${url}`);
-			throw new Error(`Failed to fetch data from the API: ${response.status} ${response.statusText}`);
-		}
-		
-		const data = await response.json();
-		console.log(`Successfully fetched: ${url}`);
-
-		// Save to cache
-		await useCache(cacheKey, type, data);
-
-		return data;
-	} catch (error) {
-		console.error(`Error fetching ${url}:`, error);
-		// Check if it's a CORS error
-		if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-			console.error('This might be a CORS issue. Check if the API allows requests from your domain.');
-		}
-		throw error;
+	// Fetch from API
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error('Failed to fetch data from the API');
 	}
+	const data = await response.json();
+
+	// Save to cache
+	await useCache(cacheKey, type, data);
+
+	return data;
 }
 
 // Fetch timestamps for word-by-word highlighting
