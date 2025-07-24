@@ -10,9 +10,23 @@ export const apiVersion = 141;
 
 export const useLocalAPI = false;
 
+// Check if we're in production (Cloudflare Pages)
+const isProduction = typeof window !== 'undefined' && window.location.hostname === 'quran.zikirnurani.com';
+
 export const apiEndpoint = useLocalAPI ? 'http://localhost:7500/v2' : 'https://api.quranwbw.com/v2';
 
 export const staticEndpoint = 'https://static.quranwbw.com/data/v4';
+
+// Add CORS proxy for production if needed
+export const corsProxy = isProduction ? 'https://api.allorigins.win/raw?url=' : '';
+
+// Helper function to get API URL with CORS proxy if needed
+export function getApiUrl(url) {
+	// For now, try direct access first
+	return url;
+	// If CORS issues persist, uncomment the line below:
+	// return isProduction ? `${corsProxy}${encodeURIComponent(url)}` : url;
+}
 
 // Updated to use Cloudflare R2 with custom domain
 export const wordsAudioURL = 'https://audio.zikirnurani.com/words';
