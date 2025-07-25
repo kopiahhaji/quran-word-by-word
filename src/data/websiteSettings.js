@@ -38,9 +38,9 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Try fallback Cloudflare Worker (more reliable)
-	console.log(`Using fallback Cloudflare Worker proxy for: ${url}`);
-	return `${corsProxyConfig.fallbackWorkerUrl}?url=${encodeURIComponent(url)}`;
+	// Try public CORS proxy (more reliable)
+	console.log(`Using public CORS proxy for: ${url}`);
+	return `${corsProxyConfig.publicProxies[0]}${encodeURIComponent(url)}`;
 }
 
 // Helper function specifically for audio URLs (tries multiple approaches)
@@ -59,10 +59,10 @@ export function getAudioUrl(url) {
 		return url;
 	}
 	
-	// For external audio sources that might need proxy, use fallback worker
+	// For external audio sources that might need proxy, use public CORS proxy
 	if (url.includes('audios.quranwbw.com')) {
-		console.log(`Using fallback Cloudflare Worker for audio: ${url}`);
-		return `${corsProxyConfig.fallbackWorkerUrl}?url=${encodeURIComponent(url)}`;
+		console.log(`Using public CORS proxy for audio: ${url}`);
+		return `${corsProxyConfig.publicProxies[0]}${encodeURIComponent(url)}`;
 	}
 	
 	// Default: return original URL
