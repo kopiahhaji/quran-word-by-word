@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Worker Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+        input { width: 400px; padding: 8px; margin: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Quick Worker Test</h1>
+    
+    <div>
+        <label>Enter your worker URL:</label><br>
+        <input type="text" id="workerUrl" placeholder="https://your-worker-name.your-subdomain.workers.dev" style="width: 500px;">
+        <button onclick="testWorker()">Test Worker</button>
+    </div>
+    
+    <div id="result" class="test loading" style="display: none;">
+        <div id="resultContent">Testing...</div>
+    </div>
+
+    <script>
+        async function testWorker() {
+            const workerUrl = document.getElementById('workerUrl').value.trim();
+            const resultDiv = document.getElementById('result');
+            const contentDiv = document.getElementById('resultContent');
+            
+            if (!workerUrl) {
+                alert('Please enter your worker URL');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test loading';
+            contentDiv.innerHTML = 'Testing worker...';
+            
+            try {
+                // Test 1: Basic connectivity
+                contentDiv.innerHTML = '🔄 Step 1: Testing basic connectivity...';
+                const healthCheck = await fetch(workerUrl);
+                
+                if (healthCheck.status === 403) {
+                    contentDiv.innerHTML = '✅ Step 1: Worker is running! (403 is expected)<br>🔄 Step 2: Testing API proxy...';
+                    
+                    // Test 2: API endpoint
+                    const apiUrl = `${workerUrl}/api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141`;
+                    const apiResponse = await fetch(apiUrl);
+                    
+                    if (apiResponse.ok) {
+                        const data = await apiResponse.json();
+                        resultDiv.className = 'test success';
+                        contentDiv.innerHTML = `
+                            ✅ <strong>Worker is working perfectly!</strong><br>
+                            ✅ Basic connectivity: OK<br>
+                            ✅ API proxy: OK<br>
+                            ✅ Data received: ${data.data?.verses?.length || 'some'} verses<br>
+                            ✅ CORS headers: ${apiResponse.headers.get('Access-Control-Allow-Origin') || 'Present'}<br><br>
+                            <strong>Your worker URL is ready to use:</strong><br>
+                            <code>${workerUrl}</code>
+                        `;
+                    } else {
+                        throw new Error(`API test failed: ${apiResponse.status} ${apiResponse.statusText}`);
+                    }
+                } else {
+                    throw new Error(`Health check failed: ${healthCheck.status} ${healthCheck.statusText}`);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'test error';
+                contentDiv.innerHTML = `
+                    ❌ <strong>Worker test failed</strong><br>
+                    Error: ${error.message}<br><br>
+                    <strong>Troubleshooting:</strong><br>
+                    1. Make sure you deployed the worker code<br>
+                    2. Check the worker URL is correct<br>
+                    3. Verify the worker is active in Cloudflare dashboard
+                `;
+            }
+        }
+        
+        // Auto-fill the expected URL format
+        window.onload = function() {
+            document.getElementById('workerUrl').value = 'https://quran-api-proxy.rodhirahman30.workers.dev';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test My Worker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test { margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #28a745; }
+        .error { background-color: #f8d7da; border-color: #dc3545; }
+        .loading { background-color: #fff3cd; border-color: #ffc107; }
+        .info { background-color: #d1ecf1; border-color: #17a2b8; }
+        button { padding: 10px 20px; margin: 10px 5px 0 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+        .url { word-break: break-all; font-family: monospace; background: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Testing Your Cloudflare Worker</h1>
+    
+    <div class="info test">
+        <strong>Your Worker URL:</strong><br>
+        <span class="url">https://quran-api-proxy.rodhirahman30.workers.dev</span>
+    </div>
+    
+    <button onclick="testWorkerHealth()">🏥 Test Worker Health</button>
+    <button onclick="testApiCall()">📚 Test Quran API</button>
+    <button onclick="testStaticCall()">📄 Test Static Data</button>
+    <button onclick="runAllTests()">🚀 Run All Tests</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const WORKER_URL = 'https://quran-api-proxy.rodhirahman30.workers.dev';
+        
+        function addResult(testName, status, message, details = '') {
+            const resultsDiv = document.getElementById('results');
+            const testDiv = document.createElement('div');
+            testDiv.className = `test ${status}`;
+            
+            let statusEmoji;
+            switch(status) {
+                case 'success': statusEmoji = '✅'; break;
+                case 'error': statusEmoji = '❌'; break;
+                case 'loading': statusEmoji = '⏳'; break;
+                default: statusEmoji = 'ℹ️';
+            }
+            
+            testDiv.innerHTML = `
+                <strong>${statusEmoji} ${testName}</strong><br>
+                ${message}
+                ${details ? `<details><summary>Details</summary><pre>${details}</pre></details>` : ''}
+            `;
+            
+            resultsDiv.appendChild(testDiv);
+            return testDiv;
+        }
+        
+        async function testWorkerHealth() {
+            const testDiv = addResult('Worker Health Check', 'loading', 'Testing if worker is accessible...');
+            
+            try {
+                const response = await fetch(WORKER_URL);
+                
+                if (response.status === 403) {
+                    testDiv.className = 'test success';
+                    testDiv.innerHTML = `
+                        <strong>✅ Worker Health Check</strong><br>
+                        Worker is running! Got expected 403 (Forbidden) status.<br>
+                        <small>This is correct - worker rejects requests without valid API paths.</small>
+                    `;
+                } else {
+                    testDiv.className = 'test error';
+                    testDiv.innerHTML = `
+                        <strong>❌ Worker Health Check</strong><br>
+                        Unexpected response: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Worker Health Check</strong><br>
+                    Failed to connect: ${error.message}
+                `;
+            }
+        }
+        
+        async function testApiCall() {
+            const testDiv = addResult('Quran API Test', 'loading', 'Testing API call through worker...');
+            
+            try {
+                const apiUrl = `${WORKER_URL}/api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141`;
+                console.log('Testing URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.data && data.data.verses) {
+                        testDiv.className = 'test success';
+                        testDiv.innerHTML = `
+                            <strong>✅ Quran API Test</strong><br>
+                            SUCCESS! Got ${data.data.verses.length} verses from Chapter 1<br>
+                            <small>CORS headers: ${response.headers.get('Access-Control-Allow-Origin') || 'Not set'}</small>
+                        `;
+                    } else {
+                        testDiv.className = 'test error';
+                        testDiv.innerHTML = `
+                            <strong>❌ Quran API Test</strong><br>
+                            Got response but no verse data found
+                        `;
+                    }
+                } else {
+                    testDiv.className = 'test error';
+                    testDiv.innerHTML = `
+                        <strong>❌ Quran API Test</strong><br>
+                        HTTP Error: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Quran API Test</strong><br>
+                    Error: ${error.message}
+                `;
+            }
+        }
+        
+        async function testStaticCall() {
+            const testDiv = addResult('Static Data Test', 'loading', 'Testing static data through worker...');
+            
+            try {
+                const staticUrl = `${WORKER_URL}/static.quranwbw.com/data/v4/meta/verseKeyData.json?version=2`;
+                console.log('Testing Static URL:', staticUrl);
+                
+                const response = await fetch(staticUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const keys = Object.keys(data);
+                    
+                    if (keys.length > 0) {
+                        testDiv.className = 'test success';
+                        testDiv.innerHTML = `
+                            <strong>✅ Static Data Test</strong><br>
+                            SUCCESS! Got ${keys.length} verse keys<br>
+                            <small>Sample keys: ${keys.slice(0, 3).join(', ')}...</small>
+                        `;
+                    } else {
+                        testDiv.className = 'test error';
+                        testDiv.innerHTML = `
+                            <strong>❌ Static Data Test</strong><br>
+                            Got response but no data found
+                        `;
+                    }
+                } else {
+                    testDiv.className = 'test error';
+                    testDiv.innerHTML = `
+                        <strong>❌ Static Data Test</strong><br>
+                        HTTP Error: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Static Data Test</strong><br>
+                    Error: ${error.message}
+                `;
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '';
+            
+            await testWorkerHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            
+            await testApiCall();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            
+            await testStaticCall();
+        }
+    </script>
+</body>
+</html>

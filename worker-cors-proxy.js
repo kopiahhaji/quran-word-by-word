@@ -23,7 +23,7 @@ async function handleRequest(request) {
     return new Response('Forbidden: Invalid target host', { 
       status: 403,
       headers: {
-        'Access-Control-Allow-Origin': 'https://quran.zikirnurani.com',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type'
       }
@@ -35,7 +35,7 @@ async function handleRequest(request) {
     return new Response(null, {
       status: 200,
       headers: {
-        'Access-Control-Allow-Origin': 'https://quran.zikirnurani.com',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Max-Age': '86400'
@@ -71,7 +71,7 @@ async function handleRequest(request) {
       statusText: response.statusText,
       headers: {
         ...Object.fromEntries(response.headers.entries()),
-        'Access-Control-Allow-Origin': 'https://quran.zikirnurani.com',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
@@ -88,7 +88,7 @@ async function handleRequest(request) {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://quran.zikirnurani.com',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type'
       }

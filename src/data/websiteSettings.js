@@ -10,8 +10,8 @@ export const apiVersion = 141;
 
 export const useLocalAPI = false;
 
-// Check if we're in production (your custom domain)
-const isProduction = typeof window !== 'undefined' && window.location.hostname === 'quran.zikirnurani.com';
+// Check if we're in production (any deployed site, not localhost)
+const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
