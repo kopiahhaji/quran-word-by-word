@@ -1,4 +1,4 @@
-<script></script>
+<script>
 	import { onMount } from 'svelte';
 	import { fetchChapterData } from '$utils/fetchData';
 	import { apiEndpoint, getApiUrl } from '$data/websiteSettings';

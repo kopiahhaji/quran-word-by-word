@@ -59,12 +59,10 @@ export function getAudioUrl(url) {
 		return url;
 	}
 	
-	// For external audio sources that might need proxy, use enhanced worker
+	// For external audio sources that might need proxy, use fallback worker
 	if (url.includes('audios.quranwbw.com')) {
-		console.log(`Using enhanced Cloudflare Worker for audio: ${url}`);
-		const targetHost = new URL(url).hostname;
-		const targetPath = new URL(url).pathname + new URL(url).search;
-		return `${corsProxyConfig.workerUrl}/${targetHost}${targetPath}`;
+		console.log(`Using fallback Cloudflare Worker for audio: ${url}`);
+		return `${corsProxyConfig.fallbackWorkerUrl}?url=${encodeURIComponent(url)}`;
 	}
 	
 	// Default: return original URL

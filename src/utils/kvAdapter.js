@@ -17,10 +17,14 @@ export async function fetchFromKV(chapterNumber) {
 	try {
 		console.log(`🔄 Fetching multilingual chapter ${chapterNumber} from KV storage...`);
 		
-		// Use your existing worker endpoint but with KV path
-		const kvURL = getApiUrl(`/kv/chapter/${chapterNumber}`);
+		// Temporarily disable KV fetching - direct fallback to null
+		console.log('⚠️ KV fetching temporarily disabled due to proxy issues');
+		return null;
 		
-		const response = await fetch(kvURL);
+		// Use your existing worker endpoint but with KV path
+		// const kvURL = getApiUrl(`/kv/chapter/${chapterNumber}`);
+		
+		// const response = await fetch(kvURL);
 		
 		if (!response.ok) {
 			throw new Error(`KV fetch failed: ${response.status} ${response.statusText}`);
@@ -183,7 +187,11 @@ export async function uploadToKV(chapterNumber, chapterData) {
 	try {
 		console.log(`🔄 Uploading chapter ${chapterNumber} to KV storage...`);
 		
-		const kvURL = getApiUrl(`/kv/chapter/${chapterNumber}`);
+		// Temporarily disable KV uploads - direct return false
+		console.log('⚠️ KV upload temporarily disabled due to proxy issues');
+		return false;
+		
+		// const kvURL = getApiUrl(`/kv/chapter/${chapterNumber}`);
 		
 		const response = await fetch(kvURL, {
 			method: 'PUT',
