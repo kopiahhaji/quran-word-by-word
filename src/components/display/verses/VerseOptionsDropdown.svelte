@@ -147,14 +147,14 @@
 	];
 
 	// Display type items
-	$: displayItems = selectableDisplays.map((display) => ({
-		text: `${display.name}`,
+	$: displayItems = Object.values(selectableDisplays).map((display) => ({
+		text: `${display.displayName}`,
 		action: () => {
-			updateSettings({ type: 'displayType', value: display.key });
+			updateSettings({ type: 'displayType', value: display.displayID });
 			dropdownOpen = false;
 		},
-		active: $__displayType === display.key,
-		analyticsEvent: `Display Type ${display.name} Button`
+		active: $__displayType === display.displayID,
+		analyticsEvent: `Display Type ${display.displayName} Button`
 	}));
 
 	// Font type items (only for mushaf mode)
