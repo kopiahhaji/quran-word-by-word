@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test { margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #28a745; }
+        .error { background-color: #f8d7da; border-color: #dc3545; }
+        .loading { background-color: #fff3cd; border-color: #ffc107; }
+        .info { background-color: #d1ecf1; border-color: #17a2b8; }
+        button { padding: 10px 20px; margin: 10px 5px 0 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .url { word-break: break-all; font-family: monospace; background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-size: 12px; }
+        audio { width: 100%; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Audio Sources Debug Test</h1>
+    
+    <div class="info test">
+        <strong>Testing different audio endpoints through your worker</strong><br>
+        Worker: <span class="url">https://quran-api-proxy.rodhirahman30.workers.dev</span>
+    </div>
+    
+    <button onclick="testDirectAudio()">🎵 Test Direct Audio</button>
+    <button onclick="testWorkerAudio()">🔄 Test Worker Audio</button>
+    <button onclick="testReciterAudio()">👨‍🎤 Test Reciter Audio</button>
+    <button onclick="testAllEndpoints()">🚀 Test All</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const WORKER_URL = 'https://quran-api-proxy.rodhirahman30.workers.dev';
+        
+        function addResult(testName, status, message, audioUrl = null) {
+            const resultsDiv = document.getElementById('results');
+            const testDiv = document.createElement('div');
+            testDiv.className = `test ${status}`;
+            
+            let statusEmoji;
+            switch(status) {
+                case 'success': statusEmoji = '✅'; break;
+                case 'error': statusEmoji = '❌'; break;
+                case 'loading': statusEmoji = '⏳'; break;
+                default: statusEmoji = 'ℹ️';
+            }
+            
+            let audioPlayer = '';
+            if (audioUrl && status === 'success') {
+                audioPlayer = `<br><audio controls><source src="${audioUrl}" type="audio/mpeg">Your browser does not support the audio element.</audio>`;
+            }
+            
+            testDiv.innerHTML = `
+                <strong>${statusEmoji} ${testName}</strong><br>
+                ${message}
+                ${audioPlayer}
+                ${audioUrl ? `<br><small class="url">${audioUrl}</small>` : ''}
+            `;
+            
+            resultsDiv.appendChild(testDiv);
+            return testDiv;
+        }
+        
+        async function testDirectAudio() {
+            const testDiv = addResult('Direct Audio Test', 'loading', 'Testing direct access to audio...');
+            
+            // Test direct access to audios.quranwbw.com
+            const directUrl = 'https://audios.quranwbw.com/words/001_001_001.mp3';
+            
+            try {
+                const response = await fetch(directUrl, { mode: 'no-cors' });
+                testDiv.className = 'test info';
+                testDiv.innerHTML = `
+                    <strong>ℹ️ Direct Audio Test</strong><br>
+                    Direct access attempted (CORS blocked as expected)<br>
+                    This confirms the need for a proxy
+                `;
+            } catch (error) {
+                testDiv.className = 'test info';
+                testDiv.innerHTML = `
+                    <strong>ℹ️ Direct Audio Test</strong><br>
+                    CORS blocked: ${error.message}<br>
+                    <small>This is expected - confirms proxy is needed</small>
+                `;
+            }
+        }
+        
+        async function testWorkerAudio() {
+            const testDiv = addResult('Worker Audio Test', 'loading', 'Testing audio through worker...');
+            
+            // Test different audio file patterns
+            const audioTests = [
+                '001_001_001.mp3',
+                '001001001.mp3', 
+                '1_1_1.mp3',
+                '001/001/001.mp3'
+            ];
+            
+            let successFound = false;
+            
+            for (const audioFile of audioTests) {
+                try {
+                    const workerUrl = `${WORKER_URL}/audios.quranwbw.com/words/${audioFile}`;
+                    const response = await fetch(workerUrl);
+                    
+                    if (response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('audio')) {
+                            testDiv.className = 'test success';
+                            testDiv.innerHTML = `
+                                <strong>✅ Worker Audio Test</strong><br>
+                                SUCCESS! Audio file found: ${audioFile}<br>
+                                Content-Type: ${contentType}<br>
+                                <audio controls><source src="${workerUrl}" type="audio/mpeg"></audio><br>
+                                <small class="url">${workerUrl}</small>
+                            `;
+                            successFound = true;
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    console.log(`Failed ${audioFile}:`, error.message);
+                }
+            }
+            
+            if (!successFound) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Worker Audio Test</strong><br>
+                    None of the tested audio file patterns worked<br>
+                    Tried: ${audioTests.join(', ')}<br>
+                    <small>The audio file naming convention might be different</small>
+                `;
+            }
+        }
+        
+        async function testReciterAudio() {
+            const testDiv = addResult('Reciter Audio Test', 'loading', 'Testing reciter audio through worker...');
+            
+            try {
+                const reciterUrl = `${WORKER_URL}/everyayah.com/data/Alafasy_128kbps/001001.mp3`;
+                const response = await fetch(reciterUrl);
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    testDiv.className = 'test success';
+                    testDiv.innerHTML = `
+                        <strong>✅ Reciter Audio Test</strong><br>
+                        SUCCESS! Reciter audio working<br>
+                        Content-Type: ${contentType}<br>
+                        <audio controls><source src="${reciterUrl}" type="audio/mpeg"></audio><br>
+                        <small class="url">${reciterUrl}</small>
+                    `;
+                } else {
+                    testDiv.className = 'test error';
+                    testDiv.innerHTML = `
+                        <strong>❌ Reciter Audio Test</strong><br>
+                        HTTP Error: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Reciter Audio Test</strong><br>
+                    Error: ${error.message}
+                `;
+            }
+        }
+        
+        async function testAllEndpoints() {
+            document.getElementById('results').innerHTML = '';
+            
+            await testDirectAudio();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testWorkerAudio();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testReciterAudio();
+        }
+    </script>
+</body>
+</html>

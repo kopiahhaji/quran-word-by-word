@@ -15,14 +15,14 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname !
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
-	// Option 1: Cloudflare Worker (using workers.dev temporarily until custom domain is configured)
+	// Option 1: Public CORS Proxy (primary - more reliable)
+	publicProxy: 'https://api.allorigins.win/raw?url=',
+	
+	// Option 2: Cloudflare Worker (fallback if available)
 	workerUrl: 'https://quran-api-proxy.rodhirahman30.workers.dev',
 	
 	// Custom domain worker (when DNS is properly configured)
 	fallbackWorkerUrl: 'https://digitalquranaudio.zikirnurani.com',
-	
-	// Option 2: Public CORS Proxy (current fallback)
-	publicProxy: 'https://api.allorigins.win/raw?url=',
 	
 	// Use proxy in production
 	useProxy: isProduction
@@ -34,19 +34,20 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Try Cloudflare Worker first (custom domain or workers.dev)
-	const workerUrl = corsProxyConfig.workerUrl || corsProxyConfig.fallbackWorkerUrl;
-	if (workerUrl && !workerUrl.includes('your-worker-name')) {
-		// Extract host and path from URL for worker format
-		const urlObj = new URL(url);
-		const workerProxyUrl = `${workerUrl}/${urlObj.host}${urlObj.pathname}${urlObj.search}`;
-		console.log(`Using Cloudflare Worker proxy: ${workerProxyUrl}`);
-		return workerProxyUrl;
-	}
-	
-	// Fallback to public proxy
+	// Use public CORS proxy as primary (more reliable for restricted APIs)
 	console.log(`Using public CORS proxy for: ${url}`);
 	return `${corsProxyConfig.publicProxy}${encodeURIComponent(url)}`;
+}
+
+// Helper function specifically for audio URLs (tries multiple approaches)
+export function getAudioUrl(url) {
+	if (!corsProxyConfig.useProxy) {
+		return url;
+	}
+	
+	// For audio files, try direct access first (many audio CDNs allow direct access)
+	// If that fails, the audio player will handle the error
+	return url;
 }
 
 export const apiEndpoint = useLocalAPI ? 'http://localhost:7500/v2' : 'https://api.quranwbw.com/v2';

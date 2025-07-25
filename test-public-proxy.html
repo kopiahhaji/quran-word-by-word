@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Public CORS Proxy</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test { margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #28a745; }
+        .error { background-color: #f8d7da; border-color: #dc3545; }
+        .loading { background-color: #fff3cd; border-color: #ffc107; }
+        .info { background-color: #d1ecf1; border-color: #17a2b8; }
+        button { padding: 10px 20px; margin: 10px 5px 0 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .url { word-break: break-all; font-family: monospace; background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-size: 12px; }
+        audio { width: 100%; margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Public CORS Proxy</h1>
+    
+    <div class="info test">
+        <strong>Testing if public CORS proxy works with QuranWBW API</strong><br>
+        This will help us determine the best approach for your deployed site.
+    </div>
+    
+    <button onclick="testPublicProxy()">🌐 Test Public Proxy</button>
+    <button onclick="testDirectAudio()">🎵 Test Direct Audio</button>
+    <button onclick="runAllTests()">🚀 Run All Tests</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(testName, status, message, details = '') {
+            const resultsDiv = document.getElementById('results');
+            const testDiv = document.createElement('div');
+            testDiv.className = `test ${status}`;
+            
+            let statusEmoji;
+            switch(status) {
+                case 'success': statusEmoji = '✅'; break;
+                case 'error': statusEmoji = '❌'; break;
+                case 'loading': statusEmoji = '⏳'; break;
+                default: statusEmoji = 'ℹ️';
+            }
+            
+            testDiv.innerHTML = `
+                <strong>${statusEmoji} ${testName}</strong><br>
+                ${message}
+                ${details ? `<details><summary>Details</summary><pre>${details}</pre></details>` : ''}
+            `;
+            
+            resultsDiv.appendChild(testDiv);
+            return testDiv;
+        }
+        
+        async function testPublicProxy() {
+            const testDiv = addResult('Public CORS Proxy Test', 'loading', 'Testing public proxy with QuranWBW API...');
+            
+            try {
+                const originalUrl = 'https://api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141';
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
+                
+                console.log('Testing proxy URL:', proxyUrl);
+                
+                const response = await fetch(proxyUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.data && data.data.verses) {
+                        testDiv.className = 'test success';
+                        testDiv.innerHTML = `
+                            <strong>✅ Public CORS Proxy Test</strong><br>
+                            SUCCESS! Got ${data.data.verses.length} verses from Chapter 1<br>
+                            Public CORS proxy works perfectly!<br>
+                            <details>
+                                <summary>Response Preview</summary>
+                                <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                            </details>
+                        `;
+                    } else {
+                        testDiv.className = 'test error';
+                        testDiv.innerHTML = `
+                            <strong>❌ Public CORS Proxy Test</strong><br>
+                            Got response but unexpected data format<br>
+                            <details>
+                                <summary>Response</summary>
+                                <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                            </details>
+                        `;
+                    }
+                } else {
+                    testDiv.className = 'test error';
+                    testDiv.innerHTML = `
+                        <strong>❌ Public CORS Proxy Test</strong><br>
+                        HTTP Error: ${response.status} ${response.statusText}
+                    `;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Public CORS Proxy Test</strong><br>
+                    Error: ${error.message}
+                `;
+            }
+        }
+        
+        async function testDirectAudio() {
+            const testDiv = addResult('Direct Audio Test', 'loading', 'Testing direct audio access...');
+            
+            // Test if audio files can be accessed directly
+            const audioUrls = [
+                'https://audios.quranwbw.com/words/001/001_001_001.mp3?version=2',
+                'https://everyayah.com/data/Alafasy_128kbps/001001.mp3'
+            ];
+            
+            let successCount = 0;
+            let results = [];
+            
+            for (const audioUrl of audioUrls) {
+                try {
+                    // Create audio element to test if it can load
+                    const audio = new Audio();
+                    
+                    const testPromise = new Promise((resolve) => {
+                        const timeout = setTimeout(() => {
+                            resolve({ url: audioUrl, status: 'timeout', canPlay: false });
+                        }, 3000);
+                        
+                        audio.oncanplaythrough = () => {
+                            clearTimeout(timeout);
+                            resolve({ url: audioUrl, status: 'success', canPlay: true });
+                        };
+                        
+                        audio.onerror = () => {
+                            clearTimeout(timeout);
+                            resolve({ url: audioUrl, status: 'error', canPlay: false });
+                        };
+                    });
+                    
+                    audio.src = audioUrl;
+                    const result = await testPromise;
+                    results.push(result);
+                    
+                    if (result.canPlay) successCount++;
+                    
+                } catch (error) {
+                    results.push({ url: audioUrl, status: 'exception', error: error.message, canPlay: false });
+                }
+            }
+            
+            if (successCount > 0) {
+                testDiv.className = 'test success';
+                testDiv.innerHTML = `
+                    <strong>✅ Direct Audio Test</strong><br>
+                    ${successCount}/${audioUrls.length} audio sources work directly!<br>
+                    Audio files can be accessed without CORS proxy<br>
+                    <details>
+                        <summary>Test Results</summary>
+                        <pre>${JSON.stringify(results, null, 2)}</pre>
+                    </details>
+                `;
+            } else {
+                testDiv.className = 'test error';
+                testDiv.innerHTML = `
+                    <strong>❌ Direct Audio Test</strong><br>
+                    No audio sources could be accessed directly<br>
+                    <details>
+                        <summary>Test Results</summary>
+                        <pre>${JSON.stringify(results, null, 2)}</pre>
+                    </details>
+                `;
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '';
+            
+            await testPublicProxy();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            await testDirectAudio();
+        }
+    </script>
+</body>
+</html>
