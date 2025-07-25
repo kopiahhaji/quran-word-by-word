@@ -91,3 +91,16 @@ export function setUserSettings(defaultSettings) {
 	// Save the updated settings back to localStorage
 	localStorage.setItem('userSettings', JSON.stringify(existingSettings));
 }
+
+// SvelteKit client hooks
+export async function handleError({ error, event }) {
+	console.error('Client error:', error);
+	return {
+		message: 'An unexpected error occurred'
+	};
+}
+
+export function init() {
+	// Client-side initialization if needed
+	console.log('Client initialized');
+}

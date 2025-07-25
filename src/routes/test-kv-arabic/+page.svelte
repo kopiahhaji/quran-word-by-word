@@ -4,8 +4,6 @@
 	import EnhancedArabicText from '$display/verses/EnhancedArabicText.svelte';
 	import { __chapterNumber } from '$utils/stores';
 
-	export let data;
-
 	let testResults = [];
 	let loading = false;
 	let testChapter = 1; // Al-Fatiha

@@ -3,8 +3,7 @@ import { get } from 'svelte/store';
 import { __fontType, __chapterData, __verseTranslationData, __wordTranslation, __wordTransliteration, __verseTranslations, __timestampData } from '$utils/stores';
 import { apiEndpoint, staticEndpoint, apiVersion, getApiUrl, corsProxyConfig } from '$data/websiteSettings';
 import { selectableFontTypes } from '$data/options';
-import { hybridDataFetcher } from '$utils/jsdelivrAdapter';
-import { hybridKVFetcher } from '$utils/kvAdapter';
+// Removed KV and JSDelivr adapters to ensure stable API-only operation
 
 // Fetch specific verses (startVerse to endVerse) and cache the data
 export async function fetchChapterData(props) {
@@ -44,97 +43,36 @@ export async function fetchChapterData(props) {
 			version: apiVersion
 		});
 
-	// Fetch from API with smart proxy logic
+	// Fetch from API with simplified proxy logic
 	let response;
-	let lastError;
 	
-	// Check if we need proxy (production environment)
-	if (corsProxyConfig.useProxy) {
-		// Try multiple proxy options for production
-		const proxyOptions = [
-			// Option 1: Public CORS proxy
-			() => {
-				const proxiedUrl = getApiUrl(apiURL);
-				console.log('🔄 Trying public CORS proxy:', proxiedUrl);
-				return fetch(proxiedUrl);
-			},
-			// Option 2: Alternative public proxy
-			() => {
-				const altProxy = `${corsProxyConfig.publicProxies[1]}${encodeURIComponent(apiURL)}`;
-				console.log('🔄 Trying alternative proxy:', altProxy);
-				return fetch(altProxy);
-			},
-			// Option 3: Another alternative
-			() => {
-				const altProxy2 = `${corsProxyConfig.publicProxies[2]}${apiURL}`;
-				console.log('🔄 Trying cors-anywhere proxy:', altProxy2);
-				return fetch(altProxy2);
-			}
-		];
-
-		for (let i = 0; i < proxyOptions.length; i++) {
-			try {
-				response = await proxyOptions[i]();
-				
-				if (response.ok) {
-					console.log(`✅ Proxy option ${i + 1} successful`);
-					break;
-				} else {
-					throw new Error(`Proxy ${i + 1} failed: ${response.status}`);
-				}
-			} catch (proxyError) {
-				console.warn(`⚠️ Proxy option ${i + 1} failed:`, proxyError.message);
-				
-				// If this is the last proxy option, throw error
-				if (i === proxyOptions.length - 1) {
-					throw new Error(
-						JSON.stringify({
-							status: response?.status || 500,
-							statusText: response?.statusText || 'Network Error',
-							message: `All proxy options failed for chapter ${props.chapter}: ${proxyError.message}`
-						})
-					);
-				}
-			}
-		}
-	} else {
-		// For development: Try direct first, then proxy as fallback
-		try {
-			console.log('🔄 Attempting direct API call...');
+	try {
+		// For production: Use reliable proxy directly
+		if (corsProxyConfig.useProxy) {
+			const proxiedUrl = getApiUrl(apiURL);
+			console.log('🔄 Using proxy for production environment:', proxiedUrl);
+			response = await fetch(proxiedUrl);
+		} else {
+			// For development: Direct API call
+			console.log('🔄 Direct API call for development');
 			response = await fetch(apiURL);
-			
-			if (!response.ok) {
-				throw new Error(`Direct API failed: ${response.status}`);
-			}
-			console.log('✅ Direct API call successful');
-		} catch (directError) {
-			console.warn('⚠️ Direct API failed, trying proxy...', directError.message);
-			lastError = directError;
-			
-			try {
-				// Second attempt: With proxy
-				const proxiedUrl = getApiUrl(apiURL);
-				console.log('🔄 Attempting proxied API call:', proxiedUrl);
-				response = await fetch(proxiedUrl);
-				
-				if (!response.ok) {
-					throw new Error(`Proxied API failed: ${response.status}`);
-				}
-				console.log('✅ Proxied API call successful');
-			} catch (proxyError) {
-				console.error('❌ All API attempts failed:', proxyError.message);
-				lastError = proxyError;
-				
-				// Final error
-				throw new Error(
-					JSON.stringify({
-						status: response?.status || 500,
-						statusText: response?.statusText || 'Network Error',
-						message: `API request failed for chapter ${props.chapter}: ${lastError.message}`
-					})
-				);
-			}
 		}
+		
+		if (!response.ok) {
+			throw new Error(`API request failed with status: ${response.status}`);
+		}
+		
+		console.log('✅ API call successful');
+		
+	} catch (error) {
+		console.error('❌ API fetch failed:', error.message);
+		throw new Error(
+			JSON.stringify({
+				status: response?.status || 500,
+				statusText: response?.statusText || 'Network Error',
+				message: `API request failed for chapter ${props.chapter}: ${error.message}`
+			})
+		);
 	}
 	
 	const data = await response.json();
