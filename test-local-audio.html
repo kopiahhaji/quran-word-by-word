@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Local Audio</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #28a745; }
+        .error { background-color: #f8d7da; border-color: #dc3545; }
+        audio { width: 100%; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Test Local Audio Files</h1>
+    
+    <div class="test">
+        <strong>Testing local audio file:</strong><br>
+        <code>/word-by-word-audio/001/001/001.mp3</code><br>
+        <audio controls>
+            <source src="/word-by-word-audio/001/001/001.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    
+    <div class="test">
+        <strong>Testing everyayah.com (reciter audio):</strong><br>
+        <code>https://everyayah.com/data/Alafasy_128kbps/001001.mp3</code><br>
+        <audio controls>
+            <source src="https://everyayah.com/data/Alafasy_128kbps/001001.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    
+    <script>
+        // Test if local files are accessible
+        fetch('/word-by-word-audio/001/001/001.mp3')
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ Local audio file accessible');
+                } else {
+                    console.log('❌ Local audio file not accessible:', response.status);
+                }
+            })
+            .catch(error => {
+                console.log('❌ Error accessing local audio:', error);
+            });
+    </script>
+</body>
+</html>

@@ -55,7 +55,12 @@ export function getAudioUrl(url) {
 		return url;
 	}
 	
-	// For other audio sources (like audios.quranwbw.com), try public proxy
+	// Local audio files (word-by-word-audio) work directly - no proxy needed
+	if (url.includes('/word-by-word-audio')) {
+		return url;
+	}
+	
+	// For external audio sources that might need proxy
 	if (url.includes('audios.quranwbw.com')) {
 		console.log(`Using CORS proxy for audio: ${url}`);
 		const primaryProxy = corsProxyConfig.publicProxies[0];
@@ -70,9 +75,9 @@ export const apiEndpoint = useLocalAPI ? 'http://localhost:7500/v2' : 'https://a
 
 export const staticEndpoint = 'https://static.quranwbw.com/data/v4';
 
-export const wordsAudioURL = 'https://audios.quranwbw.com/words';
+export const wordsAudioURL = '/word-by-word-audio';
 
-export const backupAudioURL = '/word-by-word-audio';
+export const backupAudioURL = 'https://audios.quranwbw.com/words';
 
 export const mushafFontVersion = 8;
 
