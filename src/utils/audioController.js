@@ -116,8 +116,8 @@ export function playWordAudio(props) {
 
 	const audioSettings = get(__audioSettings);
 	const [wordChapter, wordVerse, wordNumber = 1] = props.key.split(':').map(Number);
-	const currentWordFileName = `${wordChapter}/${String(wordChapter).padStart(3, '0')}_${String(wordVerse).padStart(3, '0')}_${String(wordNumber).padStart(3, '0')}.mp3`;
-	const nextWordFileName = `${wordChapter}/${String(wordChapter).padStart(3, '0')}_${String(wordVerse).padStart(3, '0')}_${String(wordNumber + 1).padStart(3, '0')}.mp3`;
+	const currentWordFileName = `${String(wordChapter).padStart(3, '0')}/${String(wordVerse).padStart(3, '0')}/${String(wordNumber).padStart(3, '0')}.mp3`;
+	const nextWordFileName = `${String(wordChapter).padStart(3, '0')}/${String(wordVerse).padStart(3, '0')}/${String(wordNumber + 1).padStart(3, '0')}.mp3`;
 	const currentAudioType = audioSettings.audioType;
 
 	// Prefetch the next word audio
