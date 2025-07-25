@@ -1,7 +1,7 @@
 import { db } from '$utils/db';
 import { get } from 'svelte/store';
 import { __fontType, __chapterData, __verseTranslationData, __wordTranslation, __wordTransliteration, __verseTranslations, __timestampData } from '$utils/stores';
-import { apiEndpoint, staticEndpoint, apiVersion } from '$data/websiteSettings';
+import { apiEndpoint, staticEndpoint, apiVersion, getApiUrl } from '$data/websiteSettings';
 import { selectableFontTypes } from '$data/options';
 
 // Fetch specific verses (startVerse to endVerse) and cache the data
@@ -33,8 +33,8 @@ export async function fetchChapterData(props) {
 			version: apiVersion
 		});
 
-	// Fetch from API
-	const response = await fetch(apiURL);
+	// Fetch from API with CORS proxy if needed
+	const response = await fetch(getApiUrl(apiURL));
 	if (!response.ok) {
 		throw new Error(
 			JSON.stringify({
@@ -92,7 +92,7 @@ export async function fetchVerseTranslationData(props) {
 	const fetchPromises = idsToFetch.map(async (id) => {
 		const url = `${staticEndpoint}/translations/data/translation_${id}.json?v=${apiVersion}`;
 		try {
-			const res = await fetch(url);
+			const res = await fetch(getApiUrl(url));
 			if (!res.ok) throw new Error(`Failed to fetch translation ID ${id}`);
 			const data = await res.json();
 
@@ -137,7 +137,7 @@ export async function fetchAndCacheJson(url, type = 'other') {
 	}
 
 	// Fetch from API
-	const response = await fetch(url);
+	const response = await fetch(getApiUrl(url));
 	if (!response.ok) {
 		throw new Error('Failed to fetch data from the API');
 	}
@@ -152,7 +152,7 @@ export async function fetchAndCacheJson(url, type = 'other') {
 // Fetch timestamps for word-by-word highlighting
 export async function fetchTimestampData(chapter) {
 	const apiURL = `${staticEndpoint}/timestamps/${chapter}.json?version=1`;
-	const response = await fetch(apiURL);
+	const response = await fetch(getApiUrl(apiURL));
 	const data = await response.json();
 	__timestampData.set(data);
 }
