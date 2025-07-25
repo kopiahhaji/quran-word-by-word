@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick JSDelivr Structure Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow: auto; font-size: 12px; max-height: 400px; }
+        button { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>📊 JSDelivr vs Current App Structure</h1>
+    
+    <div class="section info">
+        <h3>🎯 Analysis Status</h3>
+        <div id="status">Ready to analyze...</div>
+    </div>
+
+    <div class="comparison">
+        <div class="section">
+            <h3>📦 JSDelivr Data Structure</h3>
+            <button onclick="analyzeJSDelivr()">Analyze JSDelivr Structure</button>
+            <div id="jsdelivr-results"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🏠 Current App Expected Structure</h3>
+            <div class="info">
+                <h4>Current App Expects:</h4>
+                <pre>{
+  words: {
+    arabic: "word1|word2|word3",      // Split by delimiter
+    transliteration: "word1|word2|word3",  // Split by delimiter
+    translation: "word1|word2|word3"       // Split by delimiter
+  },
+  meta: {
+    page: pageNumber
+  }
+}</pre>
+                <strong>Key Points:</strong>
+                <ul>
+                    <li>Words are concatenated with "|" delimiter</li>
+                    <li>Three parallel arrays: arabic, transliteration, translation</li>
+                    <li>Meta data includes page number</li>
+                    <li>Structure: chapter → verse → words object</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>🔄 Compatibility Assessment</h3>
+        <div id="compatibility"></div>
+    </div>
+
+    <script>
+        async function analyzeJSDelivr() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('jsdelivr-results');
+            const compatibilityDiv = document.getElementById('compatibility');
+            
+            statusDiv.innerHTML = '🔄 Downloading JSDelivr data...';
+            resultDiv.innerHTML = '<div style="color: orange;">Loading JSDelivr package...</div>';
+            
+            try {
+                // Fetch the actual data
+                const response = await fetch('https://cdn.jsdelivr.net/npm/@kmaslesa/holy-quran-word-by-word-full-data@1.0.6/data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                statusDiv.innerHTML = '🔄 Parsing JSDelivr data...';
+                const data = await response.json();
+                
+                // Analyze structure
+                const topLevelKeys = Object.keys(data);
+                const sampleKey = topLevelKeys[0];
+                const sampleChapter = data[sampleKey];
+                
+                let structureInfo = {
+                    topLevelType: Array.isArray(data) ? 'Array' : 'Object',
+                    topLevelKeysCount: topLevelKeys.length,
+                    firstKey: sampleKey,
+                    chapterType: Array.isArray(sampleChapter) ? 'Array' : 'Object',
+                    sampleStructure: null,
+                    wordsStructure: null,
+                    compatibility: 'unknown'
+                };
+                
+                // Dig deeper into structure
+                if (Array.isArray(sampleChapter)) {
+                    // Chapter is array of verses
+                    if (sampleChapter.length > 0) {
+                        const sampleVerse = sampleChapter[0];
+                        structureInfo.sampleStructure = sampleVerse;
+                        
+                        if (sampleVerse && sampleVerse.words) {
+                            structureInfo.wordsStructure = sampleVerse.words;
+                        }
+                    }
+                } else if (typeof sampleChapter === 'object') {
+                    // Chapter is object with verse keys
+                    const verseKeys = Object.keys(sampleChapter);
+                    if (verseKeys.length > 0) {
+                        const sampleVerse = sampleChapter[verseKeys[0]];
+                        structureInfo.sampleStructure = sampleVerse;
+                        
+                        if (sampleVerse && sampleVerse.words) {
+                            structureInfo.wordsStructure = sampleVerse.words;
+                        }
+                    }
+                }
+                
+                // Check compatibility with current app
+                let compatibility = analyzeCompatibility(structureInfo.wordsStructure);
+                
+                statusDiv.innerHTML = '✅ Analysis complete!';
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>JSDelivr Structure Analysis</h4>
+                        <strong>Top Level:</strong> ${structureInfo.topLevelType} with ${structureInfo.topLevelKeysCount} keys<br>
+                        <strong>First Key:</strong> ${structureInfo.firstKey}<br>
+                        <strong>Chapter Type:</strong> ${structureInfo.chapterType}<br><br>
+                        
+                        <strong>Sample Verse Structure:</strong>
+                        <pre>${JSON.stringify(structureInfo.sampleStructure, null, 2).substring(0, 1000)}...</pre>
+                        
+                        <strong>Words Structure:</strong>
+                        <pre>${JSON.stringify(structureInfo.wordsStructure, null, 2)}</pre>
+                    </div>
+                `;
+                
+                compatibilityDiv.innerHTML = `
+                    <div class="${compatibility.isCompatible ? 'success' : 'error'}">
+                        <h4>${compatibility.isCompatible ? '✅' : '❌'} Compatibility Assessment</h4>
+                        <strong>Compatibility Score:</strong> ${compatibility.score}%<br>
+                        <strong>Status:</strong> ${compatibility.status}<br><br>
+                        
+                        <strong>Analysis:</strong>
+                        <ul>
+                            ${compatibility.details.map(detail => `<li>${detail}</li>`).join('')}
+                        </ul>
+                        
+                        <strong>Migration Strategy:</strong><br>
+                        ${compatibility.strategy}
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Analysis failed';
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Loading JSDelivr Data</h4>
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Possible Causes:</strong>
+                        <ul>
+                            <li>Network connectivity issues</li>
+                            <li>CORS restrictions</li>
+                            <li>Package not available</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        function analyzeCompatibility(wordsStructure) {
+            if (!wordsStructure) {
+                return {
+                    isCompatible: false,
+                    score: 0,
+                    status: 'Cannot determine - no words structure found',
+                    details: ['No words structure found in JSDelivr data'],
+                    strategy: 'Need to explore different data sources or structure'
+                };
+            }
+            
+            let score = 0;
+            let details = [];
+            let isCompatible = false;
+            
+            // Check if it's an array of word objects vs concatenated strings
+            if (Array.isArray(wordsStructure)) {
+                details.push('✅ Words are in array format (individual word objects)');
+                score += 30;
+                
+                // Check first word structure
+                if (wordsStructure.length > 0) {
+                    const firstWord = wordsStructure[0];
+                    
+                    if (firstWord.arabic || firstWord.text_arabic || firstWord.text) {
+                        details.push('✅ Arabic text found in word objects');
+                        score += 25;
+                    }
+                    
+                    if (firstWord.translation || firstWord.english || firstWord.meaning) {
+                        details.push('✅ Translation found in word objects');
+                        score += 25;
+                    }
+                    
+                    if (firstWord.transliteration || firstWord.phonetic || firstWord.romanized) {
+                        details.push('✅ Transliteration found in word objects');
+                        score += 20;
+                    }
+                    
+                    if (score >= 80) {
+                        isCompatible = true;
+                        details.push('🔄 Data transformation needed: Array → Delimited strings');
+                    }
+                }
+            } else if (typeof wordsStructure === 'object') {
+                // Check if it matches current app format
+                if (wordsStructure.arabic && wordsStructure.translation && wordsStructure.transliteration) {
+                    details.push('✅ Perfect match - arabic, translation, transliteration fields found');
+                    score = 100;
+                    isCompatible = true;
+                } else {
+                    details.push('❌ Object format but missing expected fields');
+                    score = 20;
+                }
+            } else {
+                details.push('❌ Unexpected words structure format');
+                score = 0;
+            }
+            
+            let status = '';
+            let strategy = '';
+            
+            if (score >= 90) {
+                status = 'Perfect match - direct migration possible';
+                strategy = 'Direct replacement of data source with minimal code changes';
+            } else if (score >= 70) {
+                status = 'Good compatibility - transformation needed';
+                strategy = 'Create adapter function to transform JSDelivr format to current app format';
+            } else if (score >= 50) {
+                status = 'Moderate compatibility - significant work needed';
+                strategy = 'Substantial data transformation and possibly app logic changes required';
+            } else {
+                status = 'Poor compatibility - major restructuring needed';
+                strategy = 'Consider alternative data sources or major app architecture changes';
+            }
+            
+            return { isCompatible, score, status, details, strategy };
+        }
+        
+        // Auto-run analysis
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                analyzeJSDelivr();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

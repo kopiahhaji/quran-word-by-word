@@ -52,11 +52,22 @@ async function handleRequest(request, env, ctx) {
   }
   
   if (!allowedHosts.includes(targetHost)) {
+    console.log('Host validation failed:', {
+      targetHost,
+      allowedHosts,
+      path: url.pathname,
+      origin: request.headers.get('Origin')
+    });
+    
     return new Response(JSON.stringify({
       error: 'Forbidden: Invalid target host',
       requestedHost: targetHost,
       allowedHosts: allowedHosts,
-      path: url.pathname
+      path: url.pathname,
+      debug: {
+        pathParts: url.pathname.slice(1).split('/'),
+        fullUrl: request.url
+      }
     }), { 
       status: 403,
       headers: {

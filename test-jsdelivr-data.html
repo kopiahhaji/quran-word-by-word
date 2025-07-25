@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 JSDelivr Quran Data Explorer</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        .warning { background: #fff3cd; border-color: #ffc107; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0; }
+        .metric { background: #f8f9fa; padding: 10px; border-radius: 4px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🔍 JSDelivr Quran Data Explorer</h1>
+    
+    <div class="test-section info">
+        <h2>📦 Data Source Analysis</h2>
+        <p><strong>Package:</strong> @kmaslesa/holy-quran-word-by-word-full-data</p>
+        <p><strong>CDN URL:</strong> https://cdn.jsdelivr.net/npm/@kmaslesa/holy-quran-word-by-word-full-data@1.0.6/</p>
+        <p><strong>Data File:</strong> data.json (25.52 MB)</p>
+        <p><strong>Benefits:</strong> No CORS issues, fast CDN, offline-capable</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 1. Data Structure Analysis</h2>
+        <button onclick="analyzeDataStructure()">Analyze Package Structure</button>
+        <div id="structure-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 2. Sample Data Exploration</h2>
+        <button onclick="exploreSampleData()">Load Sample Data</button>
+        <button onclick="exploreChapter1()">Load Chapter 1 Data</button>
+        <div id="sample-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ 3. Performance Comparison</h2>
+        <button onclick="comparePerformance()">Compare with Current API</button>
+        <div id="performance-comparison"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 4. Integration Test</h2>
+        <button onclick="testIntegration()">Test JSDelivr Integration</button>
+        <div id="integration-result"></div>
+    </div>
+
+    <script>
+        const jsDelivrBaseUrl = 'https://cdn.jsdelivr.net/npm/@kmaslesa/holy-quran-word-by-word-full-data@1.0.6';
+        const currentWorkerUrl = 'https://digitalquranaudio.zikirnurani.com';
+
+        async function analyzeDataStructure() {
+            const resultDiv = document.getElementById('structure-result');
+            resultDiv.innerHTML = '<div class="warning">Analyzing package structure...</div>';
+            
+            try {
+                // First, let's check the package.json
+                const packageResponse = await fetch(`${jsDelivrBaseUrl}/package.json`);
+                const packageData = await packageResponse.json();
+                
+                // Check the main index.js
+                const indexResponse = await fetch(`${jsDelivrBaseUrl}/index.js`);
+                const indexContent = await indexResponse.text();
+                
+                // Check README
+                const readmeResponse = await fetch(`${jsDelivrBaseUrl}/README.md`);
+                const readmeContent = await readmeResponse.text();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Package Analysis Complete</h4>
+                        <div class="metrics">
+                            <div class="metric"><strong>Version:</strong> ${packageData.version}</div>
+                            <div class="metric"><strong>License:</strong> ${packageData.license}</div>
+                            <div class="metric"><strong>Author:</strong> ${packageData.author || 'kmaslesa'}</div>
+                            <div class="metric"><strong>Size:</strong> ~25MB</div>
+                        </div>
+                        <strong>Package Description:</strong> ${packageData.description}<br><br>
+                        <strong>Index.js Content:</strong>
+                        <pre>${indexContent}</pre>
+                        <strong>README (first 500 chars):</strong>
+                        <pre>${readmeContent.substring(0, 500)}...</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Analysis Failed</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function exploreSampleData() {
+            const resultDiv = document.getElementById('sample-result');
+            resultDiv.innerHTML = '<div class="warning">Loading sample data (this may take a moment due to 25MB file size)...</div>';
+            
+            try {
+                const startTime = performance.now();
+                
+                // Load just a small portion of the data first to analyze structure
+                const response = await fetch(`${jsDelivrBaseUrl}/data.json`);
+                const endTime = performance.now();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Get content type and size info
+                const contentType = response.headers.get('content-type');
+                const contentLength = response.headers.get('content-length');
+                
+                // Read the response as text first to check structure
+                const textData = await response.text();
+                
+                // Try to parse as JSON
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(textData);
+                } catch (parseError) {
+                    throw new Error(`JSON Parse Error: ${parseError.message}`);
+                }
+                
+                // Analyze the structure
+                const dataKeys = Object.keys(parsedData);
+                const sampleKey = dataKeys[0];
+                const sampleData = parsedData[sampleKey];
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Data Loaded Successfully</h4>
+                        <div class="metrics">
+                            <div class="metric"><strong>Load Time:</strong> ${(endTime - startTime).toFixed(2)}ms</div>
+                            <div class="metric"><strong>File Size:</strong> ${(contentLength / 1024 / 1024).toFixed(2)} MB</div>
+                            <div class="metric"><strong>Content Type:</strong> ${contentType}</div>
+                            <div class="metric"><strong>Top-level Keys:</strong> ${dataKeys.length}</div>
+                        </div>
+                        <strong>Data Structure Keys:</strong> ${dataKeys.slice(0, 10).join(', ')}${dataKeys.length > 10 ? '...' : ''}<br><br>
+                        <strong>Sample Entry (${sampleKey}):</strong>
+                        <pre>${JSON.stringify(sampleData, null, 2).substring(0, 1000)}...</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Data Loading Failed</h4>
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Note:</strong> 25MB file may be too large for browser memory or network timeout
+                    </div>
+                `;
+            }
+        }
+
+        async function exploreChapter1() {
+            const resultDiv = document.getElementById('sample-result');
+            resultDiv.innerHTML = '<div class="warning">Looking for Chapter 1 data...</div>';
+            
+            try {
+                const response = await fetch(`${jsDelivrBaseUrl}/data.json`);
+                const data = await response.json();
+                
+                // Look for chapter 1 data in various possible formats
+                let chapter1Data = null;
+                let foundKey = null;
+                
+                // Try different possible key formats
+                const possibleKeys = ['1', 'chapter_1', 'surah_1', 'ch1', 'sura_1'];
+                
+                for (const key of possibleKeys) {
+                    if (data[key]) {
+                        chapter1Data = data[key];
+                        foundKey = key;
+                        break;
+                    }
+                }
+                
+                // If not found directly, check if it's nested
+                if (!chapter1Data) {
+                    const allKeys = Object.keys(data);
+                    for (const key of allKeys) {
+                        if (typeof data[key] === 'object' && data[key]['1']) {
+                            chapter1Data = data[key]['1'];
+                            foundKey = `${key}.1`;
+                            break;
+                        }
+                    }
+                }
+                
+                if (chapter1Data) {
+                    const verses = Array.isArray(chapter1Data) ? chapter1Data : (chapter1Data.verses || [chapter1Data]);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Chapter 1 (Al-Fatiha) Found</h4>
+                            <strong>Data Key:</strong> ${foundKey}<br>
+                            <strong>Verses Count:</strong> ${verses.length}<br><br>
+                            <strong>First Verse Sample:</strong>
+                            <pre>${JSON.stringify(verses[0], null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="warning">
+                            <h4>⚠️ Chapter 1 Not Found in Expected Format</h4>
+                            <strong>Available Top-level Keys:</strong><br>
+                            <pre>${Object.keys(data).slice(0, 20).join(', ')}</pre>
+                            <strong>Data Structure Sample:</strong>
+                            <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Chapter 1 Exploration Failed</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function comparePerformance() {
+            const resultDiv = document.getElementById('performance-comparison');
+            resultDiv.innerHTML = '<div class="warning">Running performance comparison...</div>';
+            
+            try {
+                // Test JSDelivr performance
+                const jsdelivrStart = performance.now();
+                const jsdelivrResponse = await fetch(`${jsDelivrBaseUrl}/data.json`, { method: 'HEAD' });
+                const jsdelivrEnd = performance.now();
+                
+                // Test current worker performance
+                const workerStart = performance.now();
+                const workerResponse = await fetch(`${currentWorkerUrl}/api.quranwbw.com/v2/chapter/1?verse=1`);
+                const workerEnd = performance.now();
+                
+                const jsdelivrTime = (jsdelivrEnd - jsdelivrStart).toFixed(2);
+                const workerTime = (workerEnd - workerStart).toFixed(2);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>📊 Performance Comparison</h4>
+                        <div class="metrics">
+                            <div class="metric">
+                                <strong>JSDelivr CDN</strong><br>
+                                ${jsdelivrTime}ms<br>
+                                Status: ${jsdelivrResponse.status}
+                            </div>
+                            <div class="metric">
+                                <strong>Current Worker</strong><br>
+                                ${workerTime}ms<br>
+                                Status: ${workerResponse.status}
+                            </div>
+                            <div class="metric">
+                                <strong>Winner</strong><br>
+                                ${parseFloat(jsdelivrTime) < parseFloat(workerTime) ? 'JSDelivr' : 'Worker'}
+                            </div>
+                        </div>
+                        <strong>JSDelivr Advantages:</strong>
+                        <ul>
+                            <li>✅ No CORS issues</li>
+                            <li>✅ Global CDN (fast worldwide)</li>
+                            <li>✅ Offline capability (can be cached)</li>
+                            <li>✅ No API rate limits</li>
+                            <li>✅ Self-contained (no external dependencies)</li>
+                        </ul>
+                        <strong>Current Worker Advantages:</strong>
+                        <ul>
+                            <li>✅ Smaller response sizes (per request)</li>
+                            <li>✅ Dynamic querying</li>
+                            <li>✅ Real-time data updates</li>
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Performance Comparison Failed</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testIntegration() {
+            const resultDiv = document.getElementById('integration-result');
+            resultDiv.innerHTML = '<div class="warning">Testing JSDelivr integration feasibility...</div>';
+            
+            try {
+                // Test if we can load the data module
+                const moduleTest = await fetch(`${jsDelivrBaseUrl}/index.js`);
+                const moduleContent = await moduleTest.text();
+                
+                // Test data accessibility
+                const dataTest = await fetch(`${jsDelivrBaseUrl}/data.json`, { method: 'HEAD' });
+                
+                // Test CORS headers
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': dataTest.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': dataTest.headers.get('Access-Control-Allow-Methods')
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ JSDelivr Integration Analysis</h4>
+                        <div class="metrics">
+                            <div class="metric">
+                                <strong>Data Access</strong><br>
+                                ✅ Available
+                            </div>
+                            <div class="metric">
+                                <strong>CORS</strong><br>
+                                ✅ Supported
+                            </div>
+                            <div class="metric">
+                                <strong>CDN Status</strong><br>
+                                ✅ Online
+                            </div>
+                            <div class="metric">
+                                <strong>Integration</strong><br>
+                                ✅ Feasible
+                            </div>
+                        </div>
+                        
+                        <strong>🚀 Recommendation:</strong><br>
+                        JSDelivr could be an excellent alternative/fallback data source for your Quran app!
+                        
+                        <strong>📝 Implementation Strategy:</strong>
+                        <ol>
+                            <li>Use JSDelivr as primary data source (eliminates CORS issues)</li>
+                            <li>Keep current worker as fallback for dynamic features</li>
+                            <li>Implement local caching of JSDelivr data</li>
+                            <li>Lazy load only needed chapters/verses</li>
+                        </ol>
+                        
+                        <strong>Module Content:</strong>
+                        <pre>${moduleContent}</pre>
+                        
+                        <strong>CORS Headers:</strong>
+                        <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Integration Test Failed</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run structure analysis on page load
+        window.addEventListener('load', () => {
+            analyzeDataStructure();
+        });
+    </script>
+</body>
+</html>

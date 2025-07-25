@@ -66,7 +66,48 @@ let __websiteOnline,
 	__homepageExtrasPanelVisible;
 
 if (browser) {
-	const userSettings = JSON.parse(localStorage.getItem('userSettings'));
+	// Parse user settings with error handling and defaults
+	let userSettings;
+	try {
+		userSettings = JSON.parse(localStorage.getItem('userSettings'));
+	} catch (error) {
+		console.warn('Failed to parse userSettings from localStorage:', error);
+		userSettings = null;
+	}
+
+	// Default values if userSettings is missing or corrupted
+	const defaultSettings = {
+		displaySettings: {
+			fontType: 1, // Default to first font type
+		},
+		translations: {
+			word: 1, // Default word translation
+			verse_v1: [1] // Default verse translation
+		},
+		transliteration: {
+			word: 1 // Default transliteration
+		},
+		userNotes: {},
+		userBookmarks: {}
+	};
+
+	// Merge user settings with defaults
+	if (!userSettings) {
+		userSettings = defaultSettings;
+	} else {
+		// Ensure required properties exist
+		userSettings.displaySettings = userSettings.displaySettings || defaultSettings.displaySettings;
+		userSettings.translations = userSettings.translations || defaultSettings.translations;
+		userSettings.transliteration = userSettings.transliteration || defaultSettings.transliteration;
+		userSettings.userNotes = userSettings.userNotes || defaultSettings.userNotes;
+		userSettings.userBookmarks = userSettings.userBookmarks || defaultSettings.userBookmarks;
+		
+		// Ensure specific required properties
+		userSettings.displaySettings.fontType = userSettings.displaySettings.fontType || defaultSettings.displaySettings.fontType;
+		userSettings.translations.word = userSettings.translations.word || defaultSettings.translations.word;
+		userSettings.translations.verse_v1 = userSettings.translations.verse_v1 || defaultSettings.translations.verse_v1;
+		userSettings.transliteration.word = userSettings.transliteration.word || defaultSettings.transliteration.word;
+	}
 
 	// to store network status of website
 	__websiteOnline = writable(true);

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug Arabic Text in JSDelivr Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        .warning { background: #fff3cd; border-color: #ffc107; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow: auto; font-size: 12px; max-height: 400px; }
+        button { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .arabic { font-family: 'Amiri', 'Scheherazade', serif; font-size: 18px; direction: rtl; text-align: right; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Arabic Text in JSDelivr Data</h1>
+    
+    <div class="section info">
+        <h3>🎯 Analysis Status</h3>
+        <div id="status">Ready to analyze Arabic text extraction...</div>
+    </div>
+
+    <div class="section">
+        <h3>📦 JSDelivr Arabic Text Analysis</h3>
+        <button onclick="analyzeArabicText()">Analyze Arabic Text Structure</button>
+        <div id="arabic-analysis"></div>
+    </div>
+
+    <div class="section">
+        <h3>🔧 Data Transformation Test</h3>
+        <button onclick="testTransformation()">Test Data Transformation</button>
+        <div id="transformation-test"></div>
+    </div>
+
+    <script>
+        let jsdelivrData = null;
+
+        async function analyzeArabicText() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('arabic-analysis');
+            
+            statusDiv.innerHTML = '🔄 Loading JSDelivr data to analyze Arabic text...';
+            resultDiv.innerHTML = '<div style="color: orange;">Loading...</div>';
+            
+            try {
+                const response = await fetch('https://cdn.jsdelivr.net/npm/@kmaslesa/holy-quran-word-by-word-full-data@1.0.6/data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                jsdelivrData = data;
+                
+                // Find Al-Fatiha (Chapter 1) data
+                let chapter1Data = null;
+                let verse1Data = null;
+                
+                // Look through pages to find chapter 1
+                for (let pageIndex = 0; pageIndex < Math.min(5, data.length); pageIndex++) {
+                    const page = data[pageIndex];
+                    if (page && page.ayahs) {
+                        for (const ayah of page.ayahs) {
+                            if (ayah.words && ayah.words.length > 0) {
+                                const firstWord = ayah.words[0];
+                                if (firstWord.parentAyahVerseKey === "1:1") {
+                                    verse1Data = ayah;
+                                    chapter1Data = page;
+                                    break;
+                                }
+                            }
+                        }
+                        if (verse1Data) break;
+                    }
+                }
+                
+                if (!verse1Data) {
+                    throw new Error("Could not find Chapter 1, Verse 1 data");
+                }
+                
+                const words = verse1Data.words;
+                
+                statusDiv.innerHTML = '✅ Arabic text analysis complete!';
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Arabic Text Analysis Results</h4>
+                        <strong>Found:</strong> Chapter 1, Verse 1 with ${words.length} words<br>
+                        <strong>Page:</strong> ${chapter1Data.page}<br><br>
+                        
+                        <strong>Individual Word Analysis:</strong>
+                        <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+                            <tr style="background: #f8f9fa;">
+                                <th style="border: 1px solid #ddd; padding: 8px;">Position</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Arabic Text</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Translation</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Transliteration</th>
+                                <th style="border: 1px solid #ddd; padding: 8px;">Audio URL</th>
+                            </tr>
+                            ${words.map(word => `
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${word.position}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;" class="arabic">${word.text || 'MISSING'}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${word.translation?.text || 'MISSING'}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${word.transliteration?.text || 'MISSING'}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${word.audio_url || 'MISSING'}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        
+                        <strong>Raw Word Objects:</strong>
+                        <pre>${JSON.stringify(words.slice(0, 3), null, 2)}</pre>
+                        
+                        <strong>Concatenated Arabic (for comparison):</strong>
+                        <div class="arabic" style="font-size: 24px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                            ${words.map(w => w.text).join(' ')}
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Analysis failed';
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Analyzing Arabic Text</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testTransformation() {
+            const resultDiv = document.getElementById('transformation-test');
+            
+            if (!jsdelivrData) {
+                resultDiv.innerHTML = '<div class="warning">Please run Arabic text analysis first.</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div style="color: orange;">Testing data transformation...</div>';
+            
+            try {
+                // Find Chapter 1 data for transformation test
+                let testVerse = null;
+                
+                for (let pageIndex = 0; pageIndex < Math.min(5, jsdelivrData.length); pageIndex++) {
+                    const page = jsdelivrData[pageIndex];
+                    if (page && page.ayahs) {
+                        for (const ayah of page.ayahs) {
+                            if (ayah.words && ayah.words.length > 0) {
+                                const firstWord = ayah.words[0];
+                                if (firstWord.parentAyahVerseKey === "1:1") {
+                                    testVerse = ayah;
+                                    break;
+                                }
+                            }
+                        }
+                        if (testVerse) break;
+                    }
+                }
+                
+                if (!testVerse) {
+                    throw new Error("Could not find test verse data");
+                }
+                
+                // Transform to current app format
+                const words = testVerse.words;
+                const splitDelimiter = '|';
+                
+                const transformedData = {
+                    words: {
+                        arabic: words.map(w => w.text || '').join(splitDelimiter),
+                        transliteration: words.map(w => w.transliteration?.text || '').join(splitDelimiter),
+                        translation: words.map(w => w.translation?.text || '').join(splitDelimiter)
+                    },
+                    meta: {
+                        page: 1,
+                        verseKey: "1:1"
+                    }
+                };
+                
+                // Validate transformation
+                const arabicSplit = transformedData.words.arabic.split(splitDelimiter);
+                const transliterationSplit = transformedData.words.transliteration.split(splitDelimiter);
+                const translationSplit = transformedData.words.translation.split(splitDelimiter);
+                
+                const isValid = arabicSplit.length === transliterationSplit.length && 
+                               transliterationSplit.length === translationSplit.length &&
+                               arabicSplit.every(word => word.trim() !== '');
+                
+                resultDiv.innerHTML = `
+                    <div class="${isValid ? 'success' : 'error'}">
+                        <h4>${isValid ? '✅' : '❌'} Data Transformation Test</h4>
+                        
+                        <strong>Original JSDelivr Format:</strong>
+                        <pre>${JSON.stringify(words.slice(0, 3), null, 2)}</pre>
+                        
+                        <strong>Transformed to Current App Format:</strong>
+                        <pre>${JSON.stringify(transformedData, null, 2)}</pre>
+                        
+                        <strong>Validation Results:</strong>
+                        <ul>
+                            <li>Arabic words count: ${arabicSplit.length}</li>
+                            <li>Transliteration words count: ${transliterationSplit.length}</li>
+                            <li>Translation words count: ${translationSplit.length}</li>
+                            <li>All counts match: ${arabicSplit.length === transliterationSplit.length && transliterationSplit.length === translationSplit.length ? '✅' : '❌'}</li>
+                            <li>Arabic text present: ${arabicSplit.every(word => word.trim() !== '') ? '✅' : '❌'}</li>
+                        </ul>
+                        
+                        <strong>Preview of Split Arrays:</strong>
+                        <div style="margin: 10px 0;">
+                            <strong>Arabic:</strong> <span class="arabic">[${arabicSplit.slice(0, 5).join(', ')}...]</span><br>
+                            <strong>Transliteration:</strong> [${transliterationSplit.slice(0, 5).join(', ')}...]<br>
+                            <strong>Translation:</strong> [${translationSplit.slice(0, 5).join(', ')}...]
+                        </div>
+                        
+                        ${isValid ? 
+                            '<div class="info"><strong>✅ Transformation successful!</strong> The JSDelivr data can be properly converted to your app\'s expected format.</div>' :
+                            '<div class="error"><strong>❌ Transformation failed!</strong> There are issues with the data conversion that need to be addressed.</div>'
+                        }
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Transformation Test Failed</h4>
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run analysis
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                analyzeArabicText();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
