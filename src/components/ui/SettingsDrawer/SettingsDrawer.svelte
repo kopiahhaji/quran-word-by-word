@@ -122,7 +122,10 @@
 		// Scroll to last known position
 		setTimeout(() => {
 			try {
-				document.getElementById('settings-drawer').scrollTop = mainSettingsScrollPos;
+				const settingsDrawer = document.getElementById('settings-drawer');
+				if (settingsDrawer) {
+					settingsDrawer.scrollTop = mainSettingsScrollPos;
+				}
 			} catch (error) {
 				console.warn(error);
 			}
@@ -131,7 +134,10 @@
 
 	// Navigate to an individual setting component
 	function gotoIndividualSetting(type) {
-		mainSettingsScrollPos = document.getElementById('settings-drawer').scrollTop;
+		const settingsDrawer = document.getElementById('settings-drawer');
+		if (settingsDrawer) {
+			mainSettingsScrollPos = settingsDrawer.scrollTop;
+		}
 		showAllSettings = false;
 		showIndividualSetting = true;
 		individualSettingsComponent = individualSettingsComponents[type];
@@ -139,7 +145,10 @@
 		// Scroll to the individual setting view
 		setTimeout(() => {
 			try {
-				document.getElementById('individual-setting').scrollIntoView();
+				const individualSetting = document.getElementById('individual-setting');
+				if (individualSetting) {
+					individualSetting.scrollIntoView();
+				}
 			} catch (error) {
 				console.warn(error);
 			}
@@ -158,8 +167,10 @@
 		document.querySelector('.settings-backdrop').classList.add('opacityyy-10');
 
 		const selectedElement = document.getElementById(selector);
-		selectedElement.classList.remove('opacity-0', 'pointer-events-none');
-		selectedElement.classList.add('opacity-100', `${window.theme('bgMain')}`, 'rounded-3xl', 'shadow-lg', 'px-2');
+		if (selectedElement) {
+			selectedElement.classList.remove('opacity-0', 'pointer-events-none');
+			selectedElement.classList.add('opacity-100', `${window.theme('bgMain')}`, 'rounded-3xl', 'shadow-lg', 'px-2');
+		}
 	}
 
 	// Handle mouse leave event to hide font size sliders
