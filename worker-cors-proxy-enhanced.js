@@ -21,14 +21,48 @@ async function handleRequest(request, env, ctx) {
   const allowedOrigins = env.ALLOWED_ORIGINS?.split(',') || ['*']
   const cacheTrail = parseInt(env.CACHE_TTL) || 3600
   
+  // Debug logging
+  console.log('Request URL:', request.url)
+  console.log('Origin:', request.headers.get('Origin'))
+  console.log('Allowed Origins:', allowedOrigins)
+  
   // Extract target URL from the path
   const pathParts = url.pathname.slice(1).split('/')
   const targetHost = pathParts[0]
   
+  // Debug logging
+  console.log('Path parts:', pathParts)
+  console.log('Target host:', targetHost)
+  
+  // Handle root path requests (for testing)
+  if (!targetHost || targetHost === '') {
+    return new Response(JSON.stringify({
+      status: 'OK',
+      message: 'Enhanced Cloudflare Worker with KV caching is running',
+      timestamp: new Date().toISOString(),
+      allowedHosts: allowedHosts,
+      version: '2.0'
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        ...getCorsHeaders(request, allowedOrigins)
+      }
+    })
+  }
+  
   if (!allowedHosts.includes(targetHost)) {
-    return new Response('Forbidden: Invalid target host', { 
+    return new Response(JSON.stringify({
+      error: 'Forbidden: Invalid target host',
+      requestedHost: targetHost,
+      allowedHosts: allowedHosts,
+      path: url.pathname
+    }), { 
       status: 403,
-      headers: getCorsHeaders(request, allowedOrigins)
+      headers: {
+        'Content-Type': 'application/json',
+        ...getCorsHeaders(request, allowedOrigins)
+      }
     })
   }
   
@@ -144,8 +178,22 @@ async function handleRequest(request, env, ctx) {
 // Helper function to get CORS headers
 function getCorsHeaders(request, allowedOrigins) {
   const origin = request.headers.get('Origin')
-  const allowedOrigin = allowedOrigins.includes('*') || allowedOrigins.includes(origin) ? 
-    (origin || '*') : allowedOrigins[0]
+  
+  // Handle local file testing (origin is null)
+  if (!origin || origin === 'null') {
+    return {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'false'
+    }
+  }
+  
+  // Check if origin is allowed
+  const isOriginAllowed = allowedOrigins.includes('*') || 
+                         allowedOrigins.some(allowed => origin.includes(allowed.replace('https://', '')))
+  
+  const allowedOrigin = isOriginAllowed ? origin : '*'
   
   return {
     'Access-Control-Allow-Origin': allowedOrigin,

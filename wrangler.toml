@@ -11,8 +11,8 @@ RATE_LIMIT_REQUESTS = "1000"
 # KV namespace for caching API responses
 [[env.production.kv_namespaces]]
 binding = "CACHE_KV"
-id = "6293e2eb90ab479192aaf1cadbd85d15"
-preview_id = "6293e2eb90ab479192aaf1cadbd85d15"
+id = "fcd154895c8348c19f950d106e58637a"
+preview_id = "22a0fec8188140e59a3a9ea9ae7d1cff"
 
 # Development environment 
 [env.development.vars]
@@ -22,8 +22,8 @@ RATE_LIMIT_REQUESTS = "100"
 
 [[env.development.kv_namespaces]]
 binding = "CACHE_KV"  
-id = "6293e2eb90ab479192aaf1cadbd85d15"
-preview_id = "6293e2eb90ab479192aaf1cadbd85d15"
+id = "5f3ef094d8de41ed99058fa6e06b8f9c"
+preview_id = "22a0fec8188140e59a3a9ea9ae7d1cff"
 
 # Custom domains (optional)
 [[env.production.routes]]

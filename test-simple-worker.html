@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Worker Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Worker Test</h1>
+    
+    <button onclick="testWorker()">Test Worker</button>
+    <button onclick="testAPI()">Test API Through Worker</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const workerUrl = 'https://digitalquranaudio.zikirnurani.com';
+        
+        async function testWorker() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">Testing worker...</div>';
+            
+            try {
+                const response = await fetch(workerUrl);
+                resultDiv.innerHTML = `
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+                        <strong>Worker Status:</strong> ${response.status}<br>
+                        <strong>Headers:</strong><br>
+                        Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}<br>
+                        <strong>Response:</strong> ${response.statusText}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">Testing API through worker...</div>';
+            
+            try {
+                const response = await fetch(`${workerUrl}/api.quranwbw.com/v2/chapter/1?verse=1`);
+                const data = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+                        <strong>API Status:</strong> ${response.status}<br>
+                        <strong>CORS Headers:</strong><br>
+                        Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}<br>
+                        X-Cache: ${response.headers.get('X-Cache')}<br>
+                        <strong>Data:</strong> ${data.substring(0, 200)}...
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>API Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

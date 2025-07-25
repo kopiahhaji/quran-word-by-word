@@ -16,17 +16,17 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname !
 // CORS Proxy Configuration
 export const corsProxyConfig = {
 	// Option 1: Enhanced Cloudflare Worker with KV caching (primary)
-	workerUrl: 'https://quran-api-proxy-production.rodhirahman30.workers.dev',
+	workerUrl: 'https://digitalquranaudio.zikirnurani.com',
 	
-	// Option 2: Fallback public CORS proxies
+	// Option 2: Fallback worker URL  
+	fallbackWorkerUrl: 'https://quran-api-proxy-production.rodhirahman30.workers.dev',
+	
+	// Option 3: Public CORS proxies as last resort
 	publicProxies: [
 		'https://api.allorigins.win/raw?url=',
 		'https://corsproxy.io/?',
 		'https://cors-anywhere.herokuapp.com/'
 	],
-	
-	// Custom domain worker (when DNS is properly configured)
-	fallbackWorkerUrl: 'https://digitalquranaudio.zikirnurani.com',
 	
 	// Use proxy in production
 	useProxy: isProduction
