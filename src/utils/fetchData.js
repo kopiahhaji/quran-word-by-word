@@ -1,7 +1,7 @@
 import { db } from '$utils/db';
 import { get } from 'svelte/store';
 import { __fontType, __chapterData, __verseTranslationData, __wordTranslation, __wordTransliteration, __verseTranslations, __timestampData } from '$utils/stores';
-import { apiEndpoint, staticEndpoint, apiVersion, getApiUrl } from '$data/websiteSettings';
+import { apiEndpoint, staticEndpoint, apiVersion, getApiUrl, corsProxyConfig } from '$data/websiteSettings';
 import { selectableFontTypes } from '$data/options';
 import { hybridDataFetcher } from '$utils/jsdelivrAdapter';
 import { hybridKVFetcher } from '$utils/kvAdapter';
@@ -44,27 +44,16 @@ export async function fetchChapterData(props) {
 			version: apiVersion
 		});
 
-	// Fetch from API with fallback mechanisms
+	// Fetch from API with smart proxy logic
 	let response;
 	let lastError;
 	
-	try {
-		// First attempt: Direct API call (no proxy)
-		console.log('🔄 Attempting direct API call...');
-		response = await fetch(apiURL);
-		
-		if (!response.ok) {
-			throw new Error(`Direct API failed: ${response.status}`);
-		}
-		console.log('✅ Direct API call successful');
-	} catch (directError) {
-		console.warn('⚠️ Direct API failed, trying proxy...', directError.message);
-		lastError = directError;
-		
+	// Check if we need proxy (production environment)
+	if (corsProxyConfig.useProxy) {
 		try {
-			// Second attempt: With proxy
+			// For production: Use proxy directly to avoid CORS issues
 			const proxiedUrl = getApiUrl(apiURL);
-			console.log('🔄 Attempting proxied API call:', proxiedUrl);
+			console.log('🔄 Using proxy for production environment:', proxiedUrl);
 			response = await fetch(proxiedUrl);
 			
 			if (!response.ok) {
@@ -72,17 +61,54 @@ export async function fetchChapterData(props) {
 			}
 			console.log('✅ Proxied API call successful');
 		} catch (proxyError) {
-			console.error('❌ All API attempts failed:', proxyError.message);
-			lastError = proxyError;
+			console.error('❌ Proxy API failed:', proxyError.message);
 			
-			// Final error
+			// Final error for production
 			throw new Error(
 				JSON.stringify({
 					status: response?.status || 500,
 					statusText: response?.statusText || 'Network Error',
-					message: `API request failed for chapter ${props.chapter}: ${lastError.message}`
+					message: `API request failed for chapter ${props.chapter}: ${proxyError.message}`
 				})
 			);
+		}
+	} else {
+		// For development: Try direct first, then proxy as fallback
+		try {
+			console.log('🔄 Attempting direct API call...');
+			response = await fetch(apiURL);
+			
+			if (!response.ok) {
+				throw new Error(`Direct API failed: ${response.status}`);
+			}
+			console.log('✅ Direct API call successful');
+		} catch (directError) {
+			console.warn('⚠️ Direct API failed, trying proxy...', directError.message);
+			lastError = directError;
+			
+			try {
+				// Second attempt: With proxy
+				const proxiedUrl = getApiUrl(apiURL);
+				console.log('🔄 Attempting proxied API call:', proxiedUrl);
+				response = await fetch(proxiedUrl);
+				
+				if (!response.ok) {
+					throw new Error(`Proxied API failed: ${response.status}`);
+				}
+				console.log('✅ Proxied API call successful');
+			} catch (proxyError) {
+				console.error('❌ All API attempts failed:', proxyError.message);
+				lastError = proxyError;
+				
+				// Final error
+				throw new Error(
+					JSON.stringify({
+						status: response?.status || 500,
+						statusText: response?.statusText || 'Network Error',
+						message: `API request failed for chapter ${props.chapter}: ${lastError.message}`
+					})
+				);
+			}
 		}
 	}
 	

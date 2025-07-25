@@ -28,8 +28,8 @@ export const corsProxyConfig = {
 		'https://cors-anywhere.herokuapp.com/'
 	],
 	
-	// Temporarily disable proxy due to 404 errors from primary worker
-	useProxy: false // isProduction - DISABLED for now
+	// Re-enable proxy for production (using fallback worker)
+	useProxy: isProduction
 };
 
 // Helper function to get API URL with proxy if needed
