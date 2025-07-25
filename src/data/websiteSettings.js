@@ -15,7 +15,7 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname !
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
-	// Option 1: Enhanced Cloudflare Worker with KV caching (primary)
+	// Option 1: Enhanced Cloudflare Worker with KV caching (primary) - DISABLED DUE TO 404 ERRORS
 	workerUrl: 'https://digitalquranaudio.zikirnurani.com',
 	
 	// Option 2: Fallback worker URL  
@@ -28,8 +28,8 @@ export const corsProxyConfig = {
 		'https://cors-anywhere.herokuapp.com/'
 	],
 	
-	// Use proxy in production
-	useProxy: isProduction
+	// Temporarily disable proxy due to 404 errors from primary worker
+	useProxy: false // isProduction - DISABLED for now
 };
 
 // Helper function to get API URL with proxy if needed
@@ -38,11 +38,9 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Try enhanced Cloudflare Worker first (with KV caching)
-	console.log(`Using enhanced Cloudflare Worker proxy for: ${url}`);
-	const targetHost = new URL(url).hostname;
-	const targetPath = new URL(url).pathname + new URL(url).search;
-	return `${corsProxyConfig.workerUrl}/${targetHost}${targetPath}`;
+	// Try fallback Cloudflare Worker (more reliable)
+	console.log(`Using fallback Cloudflare Worker proxy for: ${url}`);
+	return `${corsProxyConfig.fallbackWorkerUrl}?url=${encodeURIComponent(url)}`;
 }
 
 // Helper function specifically for audio URLs (tries multiple approaches)

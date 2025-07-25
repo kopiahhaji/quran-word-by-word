@@ -44,17 +44,46 @@ export async function fetchChapterData(props) {
 			version: apiVersion
 		});
 
-	// Fetch from API with CORS proxy if needed
-	const response = await fetch(getApiUrl(apiURL));
-	if (!response.ok) {
-		console.error(`❌ API fetch failed: ${response.status} ${response.statusText}`);
-		throw new Error(
-			JSON.stringify({
-				status: response.status,
-				statusText: response.statusText,
-				message: `API request failed for chapter ${props.chapter}`
-			})
-		);
+	// Fetch from API with fallback mechanisms
+	let response;
+	let lastError;
+	
+	try {
+		// First attempt: Direct API call (no proxy)
+		console.log('🔄 Attempting direct API call...');
+		response = await fetch(apiURL);
+		
+		if (!response.ok) {
+			throw new Error(`Direct API failed: ${response.status}`);
+		}
+		console.log('✅ Direct API call successful');
+	} catch (directError) {
+		console.warn('⚠️ Direct API failed, trying proxy...', directError.message);
+		lastError = directError;
+		
+		try {
+			// Second attempt: With proxy
+			const proxiedUrl = getApiUrl(apiURL);
+			console.log('🔄 Attempting proxied API call:', proxiedUrl);
+			response = await fetch(proxiedUrl);
+			
+			if (!response.ok) {
+				throw new Error(`Proxied API failed: ${response.status}`);
+			}
+			console.log('✅ Proxied API call successful');
+		} catch (proxyError) {
+			console.error('❌ All API attempts failed:', proxyError.message);
+			lastError = proxyError;
+			
+			// Final error
+			throw new Error(
+				JSON.stringify({
+					status: response?.status || 500,
+					statusText: response?.statusText || 'Network Error',
+					message: `API request failed for chapter ${props.chapter}: ${lastError.message}`
+				})
+			);
+		}
 	}
 	
 	const data = await response.json();
