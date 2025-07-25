@@ -1,0 +1,31 @@
+name = "quran-api-proxy"
+main = "worker-cors-proxy-enhanced.js"
+compatibility_date = "2024-01-01"
+
+# Environment variables for production
+[env.production.vars]
+ALLOWED_ORIGINS = "https://quran.zikirnurani.com,https://quranwbw.com,https://localhost:5173"
+CACHE_TTL = "3600"
+RATE_LIMIT_REQUESTS = "1000"
+
+# KV namespace for caching API responses
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "6293e2eb90ab479192aaf1cadbd85d15"
+preview_id = "6293e2eb90ab479192aaf1cadbd85d15"
+
+# Development environment 
+[env.development.vars]
+ALLOWED_ORIGINS = "*"
+CACHE_TTL = "300"
+RATE_LIMIT_REQUESTS = "100"
+
+[[env.development.kv_namespaces]]
+binding = "CACHE_KV"  
+id = "6293e2eb90ab479192aaf1cadbd85d15"
+preview_id = "6293e2eb90ab479192aaf1cadbd85d15"
+
+# Custom domains (optional)
+[[env.production.routes]]
+pattern = "digitalquranaudio.zikirnurani.com/*"
+zone_name = "zikirnurani.com"

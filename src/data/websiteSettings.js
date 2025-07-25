@@ -15,15 +15,15 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname !
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
-	// Option 1: Try multiple public CORS proxies
+	// Option 1: Enhanced Cloudflare Worker with KV caching (primary)
+	workerUrl: 'https://quran-api-proxy-production.rodhirahman30.workers.dev',
+	
+	// Option 2: Fallback public CORS proxies
 	publicProxies: [
 		'https://api.allorigins.win/raw?url=',
 		'https://corsproxy.io/?',
 		'https://cors-anywhere.herokuapp.com/'
 	],
-	
-	// Option 2: Cloudflare Worker (fallback if available)
-	workerUrl: 'https://quran-api-proxy.rodhirahman30.workers.dev',
 	
 	// Custom domain worker (when DNS is properly configured)
 	fallbackWorkerUrl: 'https://digitalquranaudio.zikirnurani.com',
@@ -38,10 +38,11 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Try the first available public proxy
-	const primaryProxy = corsProxyConfig.publicProxies[0];
-	console.log(`Using public CORS proxy for: ${url}`);
-	return `${primaryProxy}${encodeURIComponent(url)}`;
+	// Try enhanced Cloudflare Worker first (with KV caching)
+	console.log(`Using enhanced Cloudflare Worker proxy for: ${url}`);
+	const targetHost = new URL(url).hostname;
+	const targetPath = new URL(url).pathname + new URL(url).search;
+	return `${corsProxyConfig.workerUrl}/${targetHost}${targetPath}`;
 }
 
 // Helper function specifically for audio URLs (tries multiple approaches)
@@ -60,11 +61,12 @@ export function getAudioUrl(url) {
 		return url;
 	}
 	
-	// For external audio sources that might need proxy
+	// For external audio sources that might need proxy, use enhanced worker
 	if (url.includes('audios.quranwbw.com')) {
-		console.log(`Using CORS proxy for audio: ${url}`);
-		const primaryProxy = corsProxyConfig.publicProxies[0];
-		return `${primaryProxy}${encodeURIComponent(url)}`;
+		console.log(`Using enhanced Cloudflare Worker for audio: ${url}`);
+		const targetHost = new URL(url).hostname;
+		const targetPath = new URL(url).pathname + new URL(url).search;
+		return `${corsProxyConfig.workerUrl}/${targetHost}${targetPath}`;
 	}
 	
 	// Default: return original URL

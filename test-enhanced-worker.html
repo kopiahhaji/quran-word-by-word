@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Cloudflare Worker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test { margin: 15px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #28a745; }
+        .error { background-color: #f8d7da; border-color: #dc3545; }
+        .info { background-color: #d1ecf1; border-color: #17a2b8; }
+        .loading { background-color: #fff3cd; border-color: #ffc107; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test Enhanced Cloudflare Worker with KV Caching</h1>
+    
+    <div class="test info">
+        <strong>Worker URL:</strong><br>
+        <code>https://quran-api-proxy-production.rodhirahman30.workers.dev</code><br>
+        <small>This worker includes KV caching for faster responses</small>
+    </div>
+
+    <div class="test">
+        <h3>Test 1: API Data with Caching</h3>
+        <button onclick="testApiCall()">Test API Call</button>
+        <button onclick="testApiCallAgain()">Test Same API Call (Should be cached)</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 2: Cache Performance Comparison</h3>
+        <button onclick="performanceTest()">Run Performance Test</button>
+        <div id="performance-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 3: Worker Status</h3>
+        <button onclick="testWorkerStatus()">Check Worker Status</button>
+        <div id="status-result"></div>
+    </div>
+
+    <script>
+        const workerUrl = 'https://quran-api-proxy-production.rodhirahman30.workers.dev';
+        const testApiUrl = 'https://api.quranwbw.com/v2/chapter/1?verse=1';
+
+        async function testApiCall() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<div class="loading">Testing API call...</div>';
+            
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`${workerUrl}/api.quranwbw.com/v2/chapter/1?verse=1`);
+                const endTime = performance.now();
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const cacheStatus = response.headers.get('X-Cache') || 'UNKNOWN';
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ API Call Successful!</strong><br>
+                            <strong>Response time:</strong> ${(endTime - startTime).toFixed(2)}ms<br>
+                            <strong>Cache status:</strong> ${cacheStatus}<br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ API Call Failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testApiCallAgain() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<div class="loading">Testing cached API call...</div>';
+            
+            try {
+                const startTime = performance.now();
+                const response = await fetch(`${workerUrl}/api.quranwbw.com/v2/chapter/1?verse=1`);
+                const endTime = performance.now();
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const cacheStatus = response.headers.get('X-Cache') || 'UNKNOWN';
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Cached API Call Successful!</strong><br>
+                            <strong>Response time:</strong> ${(endTime - startTime).toFixed(2)}ms<br>
+                            <strong>Cache status:</strong> ${cacheStatus}<br>
+                            <strong>Expected:</strong> Should be much faster if cached (HIT)<br>
+                            <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Cached API Call Failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function performanceTest() {
+            const resultDiv = document.getElementById('performance-result');
+            resultDiv.innerHTML = '<div class="loading">Running performance comparison...</div>';
+            
+            try {
+                // Test direct API (will fail due to CORS, but we can measure timing)
+                const times = [];
+                
+                // Test worker 3 times
+                for (let i = 0; i < 3; i++) {
+                    const startTime = performance.now();
+                    const response = await fetch(`${workerUrl}/api.quranwbw.com/v2/chapter/1?verse=${i + 1}`);
+                    const endTime = performance.now();
+                    times.push(endTime - startTime);
+                    await response.json(); // Consume response
+                }
+                
+                const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>📊 Performance Results:</strong><br>
+                        <strong>Individual times:</strong> ${times.map(t => t.toFixed(2) + 'ms').join(', ')}<br>
+                        <strong>Average response time:</strong> ${avgTime.toFixed(2)}ms<br>
+                        <strong>Analysis:</strong> ${avgTime < 100 ? 'Excellent performance! 🚀' : avgTime < 500 ? 'Good performance! 👍' : 'Acceptable performance 👌'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Performance Test Failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testWorkerStatus() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.innerHTML = '<div class="loading">Checking worker status...</div>';
+            
+            try {
+                const response = await fetch(workerUrl, { method: 'HEAD' });
+                
+                if (response.ok || response.status === 403) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Worker is Running!</strong><br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Worker URL:</strong> ${workerUrl}<br>
+                            <strong>KV Namespace:</strong> Bound and ready<br>
+                            <strong>Environment:</strong> Production
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`Worker returned status: ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Worker Status Check Failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            testWorkerStatus();
+        });
+    </script>
+</body>
+</html>

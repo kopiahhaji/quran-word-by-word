@@ -1,0 +1,13 @@
+name = "quran-api-proxy"
+main = "worker-cors-proxy.js"
+compatibility_date = "2024-01-01"
+
+# Simple configuration without KV bindings for immediate deployment
+[env.production.vars]
+ALLOWED_ORIGINS = "https://quran.zikirnurani.com,https://quranwbw.com,https://localhost:5173"
+
+# If you want to add KV caching later, uncomment these lines:
+# [[env.production.kv_namespaces]]
+# binding = "CACHE_KV"
+# id = "6293e2eb90ab479192aaf1cadbd85d15"
+# preview_id = "6293e2eb90ab479192aaf1cadbd85d15"
