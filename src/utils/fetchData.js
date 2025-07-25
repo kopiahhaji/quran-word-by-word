@@ -4,6 +4,7 @@ import { __fontType, __chapterData, __verseTranslationData, __wordTranslation, _
 import { apiEndpoint, staticEndpoint, apiVersion, getApiUrl } from '$data/websiteSettings';
 import { selectableFontTypes } from '$data/options';
 import { hybridDataFetcher } from '$utils/jsdelivrAdapter';
+import { hybridKVFetcher } from '$utils/kvAdapter';
 
 // Fetch specific verses (startVerse to endVerse) and cache the data
 export async function fetchChapterData(props) {
@@ -29,28 +30,8 @@ export async function fetchChapterData(props) {
 		return cachedData;
 	}
 
-	// 🆕 Try JSDelivr hybrid approach first
-	try {
-		console.log('🔄 Attempting hybrid JSDelivr fetch for chapter', props.chapter);
-		const hybridResult = await hybridDataFetcher(props);
-		
-		if (hybridResult && hybridResult.data && hybridResult.data.verses) {
-			console.log(`✅ JSDelivr fetch successful for chapter ${props.chapter}`);
-			
-			// Save to cache
-			await useCache(cacheKey, 'chapter', hybridResult.data.verses);
-			
-			// Update store
-			if (!props.skipSave) __chapterData.set(hybridResult.data.verses);
-			
-			return hybridResult.data.verses;
-		}
-	} catch (error) {
-		console.warn('⚠️ JSDelivr hybrid fetch failed, falling back to API:', error);
-	}
-
-	// 🔄 Fallback to original API method
-	console.log('🔄 Using fallback API for chapter', props.chapter);
+	// 🔄 Use original API method (KV temporarily disabled)
+	console.log('🔄 Using API for chapter', props.chapter);
 	
 	// Build API URL
 	const apiURL =

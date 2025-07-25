@@ -176,7 +176,8 @@
 
 				{#if $__audioSettings.audioType === 'word'}
 					<span class="flex flex-col space-y-3 text-xs pt-2 opacity-70">
-						<span>This feature allows you to hear each word in the {term('verse')} individually. To listen to specific words, simply click on them. Please note, this option plays the words sequentially without accounting for the connecting silent letters between them. For a seamless and accurate recitation, it is recommended to play the entire {term('verse')}.</span>
+						<span>🔤 This feature allows you to hear each word in the {term('verse')} individually. To listen to specific words, simply click on them.</span>
+						<span>⚠️ Please note: This option plays words sequentially without connecting silent letters. For seamless and accurate recitation, we recommend playing the entire {term('verse')}.</span>
 					</span>
 				{/if}
 			</div>
@@ -189,7 +190,7 @@
 					<div class="flex items-center">
 						<Radio bind:group={$__audioSettings.language} value="arabic" custom>
 							<div class="{radioClasses} {$__audioSettings.language === 'arabic' && selectedRadioOrCheckboxClasses}">
-								<div class="w-full">Arabic</div>
+								<div class="w-full">Arabic (العربية)</div>
 							</div>
 						</Radio>
 					</div>
@@ -205,7 +206,7 @@
 					<div class="flex items-center">
 						<Radio bind:group={$__audioSettings.language} value="both" custom>
 							<div class="{radioClasses} {$__audioSettings.language === 'both' && selectedRadioOrCheckboxClasses}">
-								<div class="w-full">Both</div>
+								<div class="w-full">Both Languages</div>
 							</div>
 						</Radio>
 					</div>
@@ -368,10 +369,10 @@
 				<div class="flex flex-row space-x-4">
 					<!-- repeat times -->
 					<div class="flex flex-row space-x-2">
-						<span class="m-auto text-sm"> Repeat </span>
+						<span class="m-auto text-sm">🔄 Repeat</span>
 
 						<button class="{buttonClasses} text-sm">
-							<div>{$__audioSettings.timesToRepeat} {$__audioSettings.timesToRepeat > 1 ? 'times' : 'time'}</div>
+							<div>✨ {$__audioSettings.timesToRepeat} {$__audioSettings.timesToRepeat > 1 ? 'times' : 'time'}</div>
 						</button>
 						<Dropdown bind:open={timesToRepeatDropdownOpen} class="max-h-52 overflow-y-auto my-2 px-2">
 							{#each selectableRepeatTimes as n}

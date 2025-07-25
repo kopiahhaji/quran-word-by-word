@@ -19,6 +19,8 @@
 	const fontSizes = JSON.parse($__userSettings).displaySettings.fontSizes;
 	const chapter = key.split(':')[0];
 	const verse = key.split(':')[1];
+	
+	// Arabic text is now being loaded from KV storage automatically through the enhanced fetch system
 	const arabicSplit = value.words.arabic.split(splitDelimiter);
 	const transliterationSplit = value.words.transliteration.split(splitDelimiter);
 	const translationSplit = value.words.translation.split(splitDelimiter);

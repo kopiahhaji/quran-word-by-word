@@ -1,5 +1,5 @@
 name = "quran-api-proxy"
-main = "worker-cors-proxy-enhanced.js"
+main = "worker-kv-enhanced.js"
 compatibility_date = "2024-01-01"
 
 # Environment variables for production
@@ -8,22 +8,11 @@ ALLOWED_ORIGINS = "https://quran.zikirnurani.com,https://quranwbw.com,https://lo
 CACHE_TTL = "3600"
 RATE_LIMIT_REQUESTS = "1000"
 
-# KV namespace for caching API responses
+# KV namespace for Quran data storage
 [[env.production.kv_namespaces]]
-binding = "CACHE_KV"
-id = "fcd154895c8348c19f950d106e58637a"
-preview_id = "22a0fec8188140e59a3a9ea9ae7d1cff"
-
-# Development environment 
-[env.development.vars]
-ALLOWED_ORIGINS = "*"
-CACHE_TTL = "300"
-RATE_LIMIT_REQUESTS = "100"
-
-[[env.development.kv_namespaces]]
-binding = "CACHE_KV"  
-id = "5f3ef094d8de41ed99058fa6e06b8f9c"
-preview_id = "22a0fec8188140e59a3a9ea9ae7d1cff"
+binding = "KV_QURAN_DATA"
+id = "ad6b351d06e140179e5c6ea8c4e81239"
+preview_id = "c7d00e61f094403fb99e7a889bce967c"
 
 # Custom domains (optional)
 [[env.production.routes]]

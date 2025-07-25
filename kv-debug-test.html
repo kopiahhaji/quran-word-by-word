@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KV Debug Test - Quran WordByWord</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .success { color: #2e7d32; background: #e8f5e9; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .info { color: #1976d2; background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .warning { color: #f57c00; background: #fff3e0; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .debug-section { margin: 20px 0; border: 1px solid #ddd; padding: 15px; border-radius: 6px; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 KV Debug & Test Tool</h1>
+        <p>Comprehensive testing for KV storage and worker endpoints</p>
+
+        <div class="test-grid">
+            <div class="debug-section">
+                <h3>🏥 Health Check</h3>
+                <button onclick="testWorkerHealth()">Test Worker Health</button>
+                <div id="healthOutput"></div>
+            </div>
+
+            <div class="debug-section">
+                <h3>🗄️ KV Status</h3>
+                <button onclick="testKVStatus()">Test KV Status</button>
+                <div id="kvStatusOutput"></div>
+            </div>
+
+            <div class="debug-section">
+                <h3>📖 Chapter Test</h3>
+                <button onclick="testChapter1()">Test Chapter 1</button>
+                <button onclick="testChapter2()">Test Chapter 2</button>
+                <div id="chapterOutput"></div>
+            </div>
+
+            <div class="debug-section">
+                <h3>📝 Manual KV Put</h3>
+                <button onclick="putTestData()">Put Test Data via Worker</button>
+                <div id="putOutput"></div>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>📋 Debug Log</h3>
+            <button onclick="clearDebugLog()">Clear Log</button>
+            <div id="debugLog"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>💡 Manual Fix Instructions</h3>
+            <div class="info">
+                <strong>If KV tests fail, try these manual steps:</strong>
+                <ol>
+                    <li>Go to <a href="https://dash.cloudflare.com" target="_blank">Cloudflare Dashboard</a></li>
+                    <li>Navigate to <strong>Workers & Pages</strong> → <strong>KV</strong></li>
+                    <li>Create namespace: <code>quran-data-manual</code></li>
+                    <li>Add test data manually:
+                        <ul>
+                            <li>Key: <code>chapter:1</code></li>
+                            <li>Value: <code>{"chapter":1,"verses":{"1:1":{"words":{"arabic":"test"}}}}</code></li>
+                        </ul>
+                    </li>
+                    <li>Update wrangler.toml with the new namespace ID</li>
+                    <li>Redeploy worker</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://digitalquranaudio.zikirnurani.com';
+
+        function log(message, type = 'info', targetId = 'debugLog') {
+            const output = document.getElementById(targetId);
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        function clearDebugLog() {
+            document.getElementById('debugLog').innerHTML = '';
+        }
+
+        async function testWorkerHealth() {
+            log('🔄 Testing worker health...', 'info', 'healthOutput');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                log(`✅ Worker Health: ${data.status}`, 'success', 'healthOutput');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info', 'healthOutput');
+                
+            } catch (error) {
+                log(`❌ Health check failed: ${error.message}`, 'error', 'healthOutput');
+            }
+        }
+
+        async function testKVStatus() {
+            log('🔄 Testing KV status...', 'info', 'kvStatusOutput');
+            
+            try {
+                const response = await fetch(`${API_BASE}/kv/status`);
+                const data = await response.json();
+                
+                if (data.kvStatus === 'healthy') {
+                    log(`✅ KV Status: ${data.kvStatus}`, 'success', 'kvStatusOutput');
+                } else {
+                    log(`⚠️ KV Status: ${data.kvStatus}`, 'warning', 'kvStatusOutput');
+                }
+                
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info', 'kvStatusOutput');
+                
+            } catch (error) {
+                log(`❌ KV status check failed: ${error.message}`, 'error', 'kvStatusOutput');
+            }
+        }
+
+        async function testChapter1() {
+            await testChapter(1);
+        }
+
+        async function testChapter2() {
+            await testChapter(2);
+        }
+
+        async function testChapter(chapterNum) {
+            log(`🔄 Testing chapter ${chapterNum}...`, 'info', 'chapterOutput');
+            
+            try {
+                const response = await fetch(`${API_BASE}/kv/chapter/${chapterNum}`);
+                const data = await response.json();
+                
+                if (response.ok && data.verses) {
+                    const verseCount = Object.keys(data.verses).length;
+                    log(`✅ Chapter ${chapterNum}: ${verseCount} verses loaded`, 'success', 'chapterOutput');
+                    
+                    // Show first verse as sample
+                    const firstVerseKey = Object.keys(data.verses)[0];
+                    if (firstVerseKey && data.verses[firstVerseKey]) {
+                        const firstVerse = data.verses[firstVerseKey];
+                        log(`📖 Sample verse ${firstVerseKey}: ${JSON.stringify(firstVerse).substring(0, 100)}...`, 'info', 'chapterOutput');
+                    }
+                } else {
+                    log(`❌ Chapter ${chapterNum}: ${data.error || 'Not found'}`, 'error', 'chapterOutput');
+                    log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'warning', 'chapterOutput');
+                }
+                
+            } catch (error) {
+                log(`❌ Chapter ${chapterNum} test failed: ${error.message}`, 'error', 'chapterOutput');
+            }
+        }
+
+        async function putTestData() {
+            log('🔄 Attempting to put test data via worker...', 'info', 'putOutput');
+            
+            const testData = {
+                chapter: 1,
+                verses: {
+                    "1:1": {
+                        words: {
+                            arabic: "بِسْمِ|اللَّهِ|الرَّحْمَٰنِ|الرَّحِيمِ",
+                            translation: "In the name|of Allah|the Most Gracious|the Most Merciful",
+                            transliteration: "Bismi|Allahi|ar-Rahmani|ar-Raheem"
+                        },
+                        meta: {
+                            page: 1,
+                            verseKey: "1:1",
+                            wordCount: 4
+                        }
+                    }
+                },
+                metadata: {
+                    totalVerses: 7,
+                    processedAt: new Date().toISOString(),
+                    source: "manual-test"
+                }
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/kv/chapter/1`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Test data stored successfully`, 'success', 'putOutput');
+                    log(`<pre>${JSON.stringify(result, null, 2)}</pre>`, 'info', 'putOutput');
+                    
+                    // Test retrieval immediately
+                    setTimeout(() => testChapter1(), 1000);
+                } else {
+                    log(`❌ Failed to store test data: ${result.error}`, 'error', 'putOutput');
+                    log(`<pre>${JSON.stringify(result, null, 2)}</pre>`, 'warning', 'putOutput');
+                }
+                
+            } catch (error) {
+                log(`❌ Put test data failed: ${error.message}`, 'error', 'putOutput');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testWorkerHealth();
+                setTimeout(testKVStatus, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

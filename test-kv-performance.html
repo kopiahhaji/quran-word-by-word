@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KV Storage Test - Quran WordByWord</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #45a049; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .success { color: #2e7d32; background: #e8f5e9; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .info { color: #1976d2; background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .warning { color: #f57c00; background: #fff3e0; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        .loading { opacity: 0.6; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #4CAF50; }
+        .stat-label { color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ KV Storage Performance Test</h1>
+        <p>Test your Cloudflare KV storage performance for Quran data</p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="kvCount">-</div>
+                <div class="stat-label">KV Chapters Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgTime">-</div>
+                <div class="stat-label">Avg Response Time (ms)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="successRate">-</div>
+                <div class="stat-label">Success Rate (%)</div>
+            </div>
+        </div>
+
+        <div>
+            <h3>🧪 Test Functions</h3>
+            <button onclick="checkKVStatus()">Check KV Status</button>
+            <button onclick="testSingleChapter()">Test Single Chapter (Al-Fatiha)</button>
+            <button onclick="testMultipleChapters()">Test Multiple Chapters</button>
+            <button onclick="populateKV()">Populate All KV Data</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://digitalquranaudio.zikirnurani.com';
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('output').innerHTML = '';
+            testResults = [];
+            updateStats();
+        }
+
+        function updateStats() {
+            const available = testResults.filter(r => r.success).length;
+            const avgTime = testResults.length > 0 ? 
+                Math.round(testResults.reduce((sum, r) => sum + (r.responseTime || 0), 0) / testResults.length) : 0;
+            const successRate = testResults.length > 0 ? 
+                Math.round((available / testResults.length) * 100) : 0;
+
+            document.getElementById('kvCount').textContent = available;
+            document.getElementById('avgTime').textContent = avgTime;
+            document.getElementById('successRate').textContent = successRate;
+        }
+
+        async function checkKVStatus() {
+            log('🔄 Checking KV storage status...', 'info');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/kv/status`);
+                const responseTime = Date.now() - startTime;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ KV Status Check completed in ${responseTime}ms`, 'success');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+                
+                testResults.push({ success: true, responseTime, type: 'status' });
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ KV Status Check failed: ${error.message}`, 'error');
+                testResults.push({ success: false, responseTime: 0, type: 'status' });
+                updateStats();
+            }
+        }
+
+        async function testSingleChapter() {
+            const chapter = 1;
+            log(`🔄 Testing KV fetch for Chapter ${chapter} (Al-Fatiha)...`, 'info');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/kv/chapter/${chapter}`);
+                const responseTime = Date.now() - startTime;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const verseCount = data.verses ? Object.keys(data.verses).length : 0;
+                
+                log(`✅ Chapter ${chapter} loaded in ${responseTime}ms - ${verseCount} verses`, 'success');
+                log(`📊 Source: ${data.source || 'kv'}, Stored: ${data.storedAt || 'unknown'}`, 'info');
+                
+                // Show first verse as sample
+                if (data.verses && data.verses['1:1']) {
+                    const firstVerse = data.verses['1:1'];
+                    if (firstVerse.words && firstVerse.words.arabic) {
+                        log(`📖 First verse sample: ${firstVerse.words.arabic.split('|')[0]}...`, 'info');
+                    }
+                }
+                
+                testResults.push({ success: true, responseTime, type: 'single', chapter });
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ Chapter ${chapter} fetch failed: ${error.message}`, 'error');
+                testResults.push({ success: false, responseTime: 0, type: 'single', chapter });
+                updateStats();
+            }
+        }
+
+        async function testMultipleChapters() {
+            const testChapters = [1, 2, 18, 67, 114]; // Common chapters
+            log(`🔄 Testing multiple chapters: ${testChapters.join(', ')}...`, 'info');
+            
+            let successful = 0;
+            let totalTime = 0;
+            
+            for (const chapter of testChapters) {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`${API_BASE}/kv/chapter/${chapter}`);
+                    const responseTime = Date.now() - startTime;
+                    totalTime += responseTime;
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const verseCount = data.verses ? Object.keys(data.verses).length : 0;
+                        log(`✅ Chapter ${chapter}: ${responseTime}ms, ${verseCount} verses`, 'success');
+                        successful++;
+                        testResults.push({ success: true, responseTime, type: 'multi', chapter });
+                    } else {
+                        log(`❌ Chapter ${chapter}: HTTP ${response.status}`, 'error');
+                        testResults.push({ success: false, responseTime, type: 'multi', chapter });
+                    }
+                } catch (error) {
+                    log(`❌ Chapter ${chapter}: ${error.message}`, 'error');
+                    testResults.push({ success: false, responseTime: 0, type: 'multi', chapter });
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            const avgTime = totalTime / testChapters.length;
+            log(`📊 Multi-chapter test: ${successful}/${testChapters.length} successful, avg ${Math.round(avgTime)}ms`, 'info');
+            updateStats();
+        }
+
+        async function populateKV() {
+            log('🚀 Starting KV population process...', 'warning');
+            log('⚠️ This will take several minutes and populate all 114 chapters', 'warning');
+            
+            if (!confirm('This will populate all 114 chapters in KV storage. This may take several minutes. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Note: This would need to be implemented in your worker
+                // For now, we'll just show a message
+                log('📝 KV population should be run from your server/worker environment', 'info');
+                log('💡 Use the populateKV.js script in your project to populate data', 'info');
+                log('🔗 Or implement the /kv/populate endpoint in your worker', 'info');
+                
+            } catch (error) {
+                log(`❌ KV population error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run status check on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkKVStatus, 1000);
+        });
+    </script>
+</body>
+</html>

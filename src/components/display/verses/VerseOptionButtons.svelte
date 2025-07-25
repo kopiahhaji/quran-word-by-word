@@ -85,7 +85,7 @@
 					<svelte:component this={$__audioSettings.isPlaying && $__audioSettings.playingKey === key ? Pause : PlaySolid} size={3.5} />
 				</div>
 			</button>
-			<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Play</Tooltip>
+			<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">🎵 Play Verse Audio</Tooltip>
 		</div>
 		
 		<!-- notes button -->
@@ -101,7 +101,7 @@
 				>
 					<div class="flex items-center justify-center"><NotesFilled size={3.5} /></div>
 				</button>
-				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Notes</Tooltip>
+				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">📝 Your Notes</Tooltip>
 			</div>
 		{/if}
 
@@ -113,7 +113,7 @@
 						<svelte:component this={userBookmarks.includes(key) ? BookmarkFilled : Bookmark} size={3.5} />
 					</div>
 				</button>
-				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Bookmark</Tooltip>
+				<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">🔖 Saved Bookmarks</Tooltip>
 			</div>
 		{/if}
 
@@ -125,7 +125,7 @@
 				</div>
 			</button>
 			<VerseOptionsDropdown page={value.meta.page} />
-			<Tooltip triggeredBy="#verse-options-{verse}" arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Options</Tooltip>
+			<Tooltip triggeredBy="#verse-options-{verse}" arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">⚙️ More Options</Tooltip>
 		</div>
 	</div>
 	</div>
@@ -138,7 +138,7 @@
 					<Eye />
 				</div>
 			</button>
-			<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">Toggle Words</Tooltip>
+			<Tooltip arrow={false} type="light" placement="top" class="z-30 hidden md:block font-normal">👁️ Toggle Word View</Tooltip>
 		</div>
 	{/if}
 </div>

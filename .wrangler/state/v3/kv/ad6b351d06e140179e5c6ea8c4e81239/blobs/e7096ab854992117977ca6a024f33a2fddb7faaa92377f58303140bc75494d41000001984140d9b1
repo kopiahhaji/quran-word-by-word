@@ -1,0 +1,33 @@
+{
+  "chapter": 1,
+  "verses": {
+    "1:1": {
+      "words": {
+        "arabic": "بِسْمِ|اللَّهِ|الرَّحْمَٰنِ|الرَّحِيمِ",
+        "translation": "In the name|of Allah|the Most Gracious|the Most Merciful",
+        "transliteration": "Bismi|Allahi|ar-Rahmani|ar-Raheem"
+      },
+      "meta": {
+        "page": 1,
+        "verseKey": "1:1",
+        "wordCount": 4
+      }
+    },
+    "1:2": {
+      "words": {
+        "arabic": "الْحَمْدُ|لِلَّهِ|رَبِّ|الْعَالَمِينَ",
+        "translation": "All praise|belongs to Allah|Lord|of the worlds",
+        "transliteration": "Al-hamdu|lillahi|rabbi|al-alameen"
+      },
+      "meta": {
+        "page": 1,
+        "verseKey": "1:2",
+        "wordCount": 4
+      }
+    }
+  },
+  "metadata": {
+    "totalVerses": 7,
+    "processedAt": "2025-07-25T11:03:23.774Z"
+  }
+}

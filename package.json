@@ -21,7 +21,7 @@
 		"svelte": "^5.1.9",
 		"tailwindcss": "^3.4.14",
 		"vite": "^6.0.1",
-		"wrangler": "^3.96.0"
+		"wrangler": "^4.26.0"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.850.0",
