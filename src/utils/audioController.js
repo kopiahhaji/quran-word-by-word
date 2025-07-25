@@ -2,6 +2,7 @@ import { get } from 'svelte/store';
 import { quranMetaData } from '$data/quranMeta';
 import { __reciter, __translationReciter, __playbackSpeed, __audioSettings, __audioModalVisible, __currentPage, __chapterNumber, __timestampData, __keysToFetch } from '$utils/stores';
 import { wordsAudioURL } from '$data/websiteSettings';
+import { getAudioUrl } from '$data/websiteSettings';
 import { selectableReciters, selectableTranslationReciters, selectablePlaybackSpeeds, selectableAudioDelays } from '$data/options';
 import { fetchTimestampData } from '$utils/fetchData';
 import { scrollSmoothly } from '$utils/scrollSmoothly';
@@ -35,9 +36,11 @@ export async function playVerseAudio(props) {
 	const nextVerseFileName = `${String(playChapter).padStart(3, '0')}${String(playVerse + 1).padStart(3, '0')}.mp3`;
 
 	// Prefetch the next verse audio
-	fetch(`${reciterAudioUrl}/${nextVerseFileName}`);
+	const nextVerseUrl = getAudioUrl(`${reciterAudioUrl}/${nextVerseFileName}`);
+	fetch(nextVerseUrl);
 
-	audio.src = `${reciterAudioUrl}/${currentVerseFileName}`;
+	const currentVerseUrl = getAudioUrl(`${reciterAudioUrl}/${currentVerseFileName}`);
+	audio.src = currentVerseUrl;
 	audio.currentTime = 0;
 	audio.load();
 	audio.playbackRate = selectablePlaybackSpeeds[get(__playbackSpeed)].speed;
@@ -118,9 +121,11 @@ export function playWordAudio(props) {
 	const currentAudioType = audioSettings.audioType;
 
 	// Prefetch the next word audio
-	fetch(`${wordsAudioURL}/${nextWordFileName}?version=2`);
+	const nextWordUrl = getAudioUrl(`${wordsAudioURL}/${nextWordFileName}?version=2`);
+	fetch(nextWordUrl);
 
-	audio.src = `${wordsAudioURL}/${currentWordFileName}?version=2`;
+	const currentWordUrl = getAudioUrl(`${wordsAudioURL}/${currentWordFileName}?version=2`);
+	audio.src = currentWordUrl;
 	audio.currentTime = 0;
 	audio.load();
 	audio.playbackRate = selectablePlaybackSpeeds[get(__playbackSpeed)].speed;

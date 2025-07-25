@@ -15,8 +15,12 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname !
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
-	// Option 1: Public CORS Proxy (primary - more reliable)
-	publicProxy: 'https://api.allorigins.win/raw?url=',
+	// Option 1: Try multiple public CORS proxies
+	publicProxies: [
+		'https://api.allorigins.win/raw?url=',
+		'https://corsproxy.io/?',
+		'https://cors-anywhere.herokuapp.com/'
+	],
 	
 	// Option 2: Cloudflare Worker (fallback if available)
 	workerUrl: 'https://quran-api-proxy.rodhirahman30.workers.dev',
@@ -34,9 +38,10 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Use public CORS proxy as primary (more reliable for restricted APIs)
+	// Try the first available public proxy
+	const primaryProxy = corsProxyConfig.publicProxies[0];
 	console.log(`Using public CORS proxy for: ${url}`);
-	return `${corsProxyConfig.publicProxy}${encodeURIComponent(url)}`;
+	return `${primaryProxy}${encodeURIComponent(url)}`;
 }
 
 // Helper function specifically for audio URLs (tries multiple approaches)
@@ -45,8 +50,19 @@ export function getAudioUrl(url) {
 		return url;
 	}
 	
-	// For audio files, try direct access first (many audio CDNs allow direct access)
-	// If that fails, the audio player will handle the error
+	// everyayah.com works directly - no proxy needed
+	if (url.includes('everyayah.com')) {
+		return url;
+	}
+	
+	// For other audio sources (like audios.quranwbw.com), try public proxy
+	if (url.includes('audios.quranwbw.com')) {
+		console.log(`Using CORS proxy for audio: ${url}`);
+		const primaryProxy = corsProxyConfig.publicProxies[0];
+		return `${primaryProxy}${encodeURIComponent(url)}`;
+	}
+	
+	// Default: return original URL
 	return url;
 }
 
