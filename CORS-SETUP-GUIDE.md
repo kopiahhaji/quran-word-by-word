@@ -11,16 +11,11 @@ You have **TWO CORS solutions** implemented in your project. Choose the one that
 4. Deploy your worker
 
 ### **Step 2: Update Your Configuration**
-1. Copy your worker URL (e.g., `https://quran-api-proxy.your-subdomain.workers.dev`)
-2. Open `src/data/websiteSettings.js`
-3. Replace this line:
-   ```javascript
-   workerUrl: 'https://your-worker-name.your-subdomain.workers.dev',
-   ```
-   With your actual worker URL:
-   ```javascript
-   workerUrl: 'https://quran-api-proxy.your-subdomain.workers.dev',
-   ```
+
+✅ **COMPLETED**: Your worker URL has been configured!
+
+- **Your Worker URL**: `https://quran-api-proxy.rodhirahman30.workers.dev`
+- **Configuration**: Already updated in `src/data/websiteSettings.js`
 
 ### **Step 3: Test Your Setup**
 1. Deploy your changes to Cloudflare Pages

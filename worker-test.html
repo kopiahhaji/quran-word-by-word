@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .loading { background-color: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Worker CORS Proxy Test</h1>
+    
+    <div id="test1" class="test loading">
+        <strong>Test 1: Worker Health Check</strong>
+        <div id="result1">Testing...</div>
+    </div>
+    
+    <div id="test2" class="test loading">
+        <strong>Test 2: QuranWBW API via Worker</strong>
+        <div id="result2">Testing...</div>
+    </div>
+    
+    <div id="test3" class="test loading">
+        <strong>Test 3: Static Endpoint via Worker</strong>
+        <div id="result3">Testing...</div>
+    </div>
+
+    <script>
+        // Test both URLs to see which one works
+        const customDomain = 'https://digitalquranaudio.zikirnurani.com';
+        const workersDev = 'https://quran-api-proxy.rodhirahman30.workers.dev';
+        
+        async function testUrl(url, testName) {
+            console.log(`Testing ${testName}: ${url}`);
+            try {
+                const response = await fetch(url);
+                console.log(`${testName} response:`, response.status, response.statusText);
+                return { success: true, status: response.status, statusText: response.statusText };
+            } catch (error) {
+                console.error(`${testName} error:`, error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function runTests() {
+            // Test 1: Custom domain health check
+            const customResult = await testUrl(customDomain, 'Custom Domain');
+            if (customResult.success && customResult.status === 403) {
+                document.getElementById('test1').className = 'test success';
+                document.getElementById('result1').innerHTML = '✅ Custom domain worker is running';
+            } else {
+                document.getElementById('test1').className = 'test error';
+                document.getElementById('result1').innerHTML = `❌ Custom domain: ${customResult.error || `Status ${customResult.status}`}`;
+                
+                // Test fallback to workers.dev
+                const fallbackResult = await testUrl(workersDev, 'Workers.dev Fallback');
+                if (fallbackResult.success && fallbackResult.status === 403) {
+                    document.getElementById('result1').innerHTML += '<br>✅ But workers.dev URL works! Custom domain needs configuration.';
+                }
+            }
+            
+            // Test 2: API endpoint (try custom domain first, then fallback)
+            let apiUrl = `${customDomain}/api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141`;
+            let apiResult = await testApiUrl(apiUrl, 'Custom Domain API');
+            
+            if (!apiResult.success) {
+                // Try workers.dev as fallback
+                apiUrl = `${workersDev}/api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141`;
+                apiResult = await testApiUrl(apiUrl, 'Workers.dev API');
+            }
+            
+            if (apiResult.success) {
+                document.getElementById('test2').className = 'test success';
+                document.getElementById('result2').innerHTML = `✅ API working! Got ${apiResult.verses} verses via ${apiResult.source}`;
+            } else {
+                document.getElementById('test2').className = 'test error';
+                document.getElementById('result2').innerHTML = `❌ API failed on both domains: ${apiResult.error}`;
+            }
+            
+            // Test 3: Static endpoint
+            let staticUrl = `${customDomain}/static.quranwbw.com/data/v4/meta/verseKeyData.json?version=2`;
+            let staticResult = await testStaticUrl(staticUrl, 'Custom Domain Static');
+            
+            if (!staticResult.success) {
+                staticUrl = `${workersDev}/static.quranwbw.com/data/v4/meta/verseKeyData.json?version=2`;
+                staticResult = await testStaticUrl(staticUrl, 'Workers.dev Static');
+            }
+            
+            if (staticResult.success) {
+                document.getElementById('test3').className = 'test success';
+                document.getElementById('result3').innerHTML = `✅ Static endpoint working! Got ${staticResult.keys} keys via ${staticResult.source}`;
+            } else {
+                document.getElementById('test3').className = 'test error';
+                document.getElementById('result3').innerHTML = `❌ Static failed on both domains: ${staticResult.error}`;
+            }
+        }
+        
+        async function testApiUrl(url, source) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    return { 
+                        success: true, 
+                        verses: data.data?.verses?.length || 'some',
+                        source: source
+                    };
+                } else {
+                    return { success: false, error: `${response.status} ${response.statusText}` };
+                }
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testStaticUrl(url, source) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    return { 
+                        success: true, 
+                        keys: Object.keys(data).length,
+                        source: source
+                    };
+                } else {
+                    return { success: false, error: `${response.status} ${response.statusText}` };
+                }
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Cloudflare Worker CORS Proxy Test</h1>
+    
+    <div class="info result">
+        <strong>Worker URL:</strong> https://quran-api-proxy.rodhirahman30.workers.dev
+    </div>
+    
+    <button onclick="testWorker()">🧪 Test Worker</button>
+    <button onclick="testDirectAPI()">🔗 Test Direct API (for comparison)</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testWorker() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="info result">Testing worker...</div>';
+            
+            try {
+                // Test through your worker
+                const workerUrl = 'https://quran-api-proxy.rodhirahman30.workers.dev/api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141';
+                
+                const response = await fetch(workerUrl);
+                const data = await response.json();
+                
+                if (response.ok && data.data) {
+                    resultsDiv.innerHTML = `
+                        <div class="success result">
+                            ✅ <strong>Worker Test: SUCCESS!</strong><br>
+                            Status: ${response.status}<br>
+                            Verses found: ${data.data.verses.length}<br>
+                            CORS headers: ${response.headers.get('Access-Control-Allow-Origin') || 'Not set'}
+                        </div>
+                        <details>
+                            <summary>Response Data (click to expand)</summary>
+                            <pre>${JSON.stringify(data, null, 2).substring(0, 1000)}...</pre>
+                        </details>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error result">
+                        ❌ <strong>Worker Test: FAILED</strong><br>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDirectAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="info result">Testing direct API (should fail with CORS)...</div>';
+            
+            try {
+                // Test direct API (should fail with CORS)
+                const directUrl = 'https://api.quranwbw.com/v2/chapter?chapter=1&word_type=1&word_translation=1&word_transliteration=1&version=141';
+                
+                const response = await fetch(directUrl);
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="success result">
+                        ⚠️ <strong>Direct API: Unexpected Success</strong><br>
+                        (This should normally fail with CORS from your domain)
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error result">
+                        ✅ <strong>Direct API: Expected CORS Failure</strong><br>
+                        Error: ${error.message}<br>
+                        <em>This is expected - it confirms CORS protection is working</em>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

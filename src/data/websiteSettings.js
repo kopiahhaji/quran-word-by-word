@@ -15,8 +15,11 @@ const isProduction = typeof window !== 'undefined' && window.location.hostname =
 
 // CORS Proxy Configuration
 export const corsProxyConfig = {
-	// Option 1: Cloudflare Worker (RECOMMENDED - replace with your worker URL)
-	workerUrl: 'https://your-worker-name.your-subdomain.workers.dev',
+	// Option 1: Cloudflare Worker (using workers.dev temporarily until custom domain is configured)
+	workerUrl: 'https://quran-api-proxy.rodhirahman30.workers.dev',
+	
+	// Custom domain worker (when DNS is properly configured)
+	fallbackWorkerUrl: 'https://digitalquranaudio.zikirnurani.com',
 	
 	// Option 2: Public CORS Proxy (current fallback)
 	publicProxy: 'https://api.allorigins.win/raw?url=',
@@ -31,15 +34,18 @@ export function getApiUrl(url) {
 		return url;
 	}
 	
-	// Try Cloudflare Worker first (if configured)
-	if (corsProxyConfig.workerUrl && !corsProxyConfig.workerUrl.includes('your-worker-name')) {
+	// Try Cloudflare Worker first (custom domain or workers.dev)
+	const workerUrl = corsProxyConfig.workerUrl || corsProxyConfig.fallbackWorkerUrl;
+	if (workerUrl && !workerUrl.includes('your-worker-name')) {
 		// Extract host and path from URL for worker format
 		const urlObj = new URL(url);
-		return `${corsProxyConfig.workerUrl}/${urlObj.host}${urlObj.pathname}${urlObj.search}`;
+		const workerProxyUrl = `${workerUrl}/${urlObj.host}${urlObj.pathname}${urlObj.search}`;
+		console.log(`Using Cloudflare Worker proxy: ${workerProxyUrl}`);
+		return workerProxyUrl;
 	}
 	
 	// Fallback to public proxy
-	console.log(`Using CORS proxy for: ${url}`);
+	console.log(`Using public CORS proxy for: ${url}`);
 	return `${corsProxyConfig.publicProxy}${encodeURIComponent(url)}`;
 }
 
