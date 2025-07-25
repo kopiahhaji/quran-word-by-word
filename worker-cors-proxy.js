@@ -11,7 +11,9 @@ async function handleRequest(request) {
   // Only handle specific API endpoints
   const allowedHosts = [
     'api.quranwbw.com',
-    'static.quranwbw.com'
+    'static.quranwbw.com',
+    'audios.quranwbw.com',
+    'everyayah.com'
   ]
   
   // Extract target URL from the path
